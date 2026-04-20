@@ -311,6 +311,23 @@ function setupEvents() {
             return; // หยุดการทำงานตรงนี้สำหรับ Insta
         }
 
+        else if (currentModalType === 'tw_post') {
+            const displayName = $('#modal_tw_display').val().trim() || 'User';
+            const username = $('#modal_tw_user').val().trim() || 'user';
+            const text = $('#modal_tw_text').val().trim() || '';
+            const isPrivate = $('#modal_tw_private').is(':checked');
+            const replies = $('#modal_tw_replies').val().trim() || '0';
+            const retweets = $('#modal_tw_rts').val().trim() || '0';
+            const likes = $('#modal_tw_likes').val().trim() || '0';
+
+            if(text) {
+                twitterDrafts.push({ displayName, username, text, isPrivate, replies, retweets, likes });
+                updateTwitterDraftsUI();
+            }
+            $('#st_phone_modal').fadeOut(200);
+            return; // หยุดการทำงานตรงนี้สำหรับ Twitter
+        }
+
         if (currentModalType !== 'add_media') {
             updateChatDraftsUI();
         }
@@ -455,6 +472,77 @@ function setupEvents() {
 
         instaDrafts = []; // ล้าง Draft
         updateInstaDraftsUI();
+        $('#st_phone_container').fadeOut(200);
+    });
+
+        // --- Events สำหรับ Twitter App ---
+
+    // 1. คลิกไอคอน Twitter เพื่อเปิดแอพ
+    $(document).off('click', '.st-phone-app-icon[data-app="twitter"]').on('click', '.st-phone-app-icon[data-app="twitter"]', function() {
+        renderTwitterApp();
+    });
+
+    // 2. สลับธีม (Light/Dark)
+    $(document).on('click', '#st_phone_tw_theme', function() {
+        const settings = extension_settings[extensionName];
+        settings.twitterTheme = settings.twitterTheme === 'dark' ? 'light' : 'dark';
+        saveSettingsDebounced();
+        renderTwitterApp(); // รีเฟรชหน้าจอเพื่อเปลี่ยนสี
+    });
+
+    // 3. คลิกปุ่ม (ขนนก) เพื่อสร้างทวีต
+    $(document).on('click', '#st_phone_tw_add', function() {
+        currentModalType = 'tw_post';
+        $('#st_phone_modal_title').text('Compose Tweet');
+
+        const charDetails = getCharDetails();
+        // สร้าง Username อัตโนมัติจากชื่อตัวละคร (ลบช่องว่างและทำเป็นตัวเล็ก)
+        const defaultUsername = charDetails.name.replace(/\s+/g, '').toLowerCase();
+
+        $('#st_phone_modal_body').html(`
+            <input type="text" id="modal_tw_display" class="st-phone-modal-input" value="You" placeholder="Display Name">
+            <input type="text" id="modal_tw_user" class="st-phone-modal-input" value="${defaultUsername}" placeholder="Username (without @)" style="margin-top:10px;">
+            <textarea id="modal_tw_text" class="st-phone-modal-input" placeholder="What's happening?" style="margin-top:10px; height:80px; resize:none; font-family:sans-serif;"></textarea>
+
+            <label style="display:flex; align-items:center; gap:10px; margin-top:10px; font-size:14px; cursor:pointer;">
+                <input type="checkbox" id="modal_tw_private"> Private Account
+            </label>
+
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <input type="number" id="modal_tw_replies" class="st-phone-modal-input" placeholder="Replies">
+                <input type="number" id="modal_tw_rts" class="st-phone-modal-input" placeholder="Retweets">
+                <input type="number" id="modal_tw_likes" class="st-phone-modal-input" placeholder="Likes">
+            </div>
+        `);
+        $('#st_phone_modal').fadeIn(200);
+    });
+
+    // 4. ปุ่ม Delete ทวีต
+    $(document).on('click', '.st-phone-tw-delete', function() {
+        const index = $(this).data('index');
+        twitterDrafts.splice(index, 1);
+        updateTwitterDraftsUI();
+    });
+
+    // 5. ปุ่มส่งออก Prompt ของ Twitter
+    $(document).on('click', '#st_phone_tw_export', function() {
+        if (twitterDrafts.length === 0) return;
+
+        let promptText = `\n[🐦 Twitter App - New Tweet]:\n`;
+        twitterDrafts.forEach(draft => {
+            const privacy = draft.isPrivate ? "(Private Account)" : "(Public Account)";
+            promptText += `Name: ${draft.displayName} (@${draft.username}) ${privacy}\n`;
+            promptText += `Tweet: "${draft.text}"\n`;
+            promptText += `Stats: ${draft.replies} Replies | ${draft.retweets} Retweets | ${draft.likes} Likes\n\n`;
+        });
+        promptText += `(Assistant, please reply, retweet, or react to this tweet as your character!)\n`;
+
+        const stInput = $('#send_textarea');
+        const currentVal = stInput.val();
+        stInput.val(currentVal + promptText).trigger('input');
+
+        twitterDrafts = []; // ล้าง Draft
+        updateTwitterDraftsUI();
         $('#st_phone_container').fadeOut(200);
     });
 
@@ -773,6 +861,89 @@ function updateInstaDraftsUI() {
             </div>
         `;
         feedArea.prepend(postHtml); // ใช้ prepend เพื่อให้โพสต์ใหม่อยู่บนสุด
+    });
+}
+
+// --- Phase 5: Twitter App ---
+let twitterDrafts = [];
+
+// ฟังก์ชันสร้างหน้าจอ Twitter
+function renderTwitterApp() {
+    const settings = extension_settings[extensionName];
+    // ตรวจสอบธีม (ค่าเริ่มต้นคือ Light)
+    const isDark = settings.twitterTheme === 'dark';
+    const darkClass = isDark ? 'dark-mode' : '';
+    const themeIcon = isDark ? 'fa-sun' : 'fa-moon';
+
+    const html = `
+        <div class="st-phone-tw-wrapper ${darkClass}" id="st_phone_tw_wrapper">
+            <div class="st-phone-tw-header">
+                <div class="st-phone-back-btn" title="Back"><i class="fa-solid fa-chevron-left"></i></div>
+                <div class="st-phone-tw-logo"><i class="fa-brands fa-twitter"></i></div>
+                <div class="st-phone-tw-actions">
+                    <i class="fa-solid ${themeIcon}" id="st_phone_tw_theme" title="Toggle Theme"></i>
+                    <i class="fa-solid fa-feather-pointed" id="st_phone_tw_add" title="Tweet"></i>
+                </div>
+            </div>
+
+            <div class="st-phone-tw-feed" id="st_phone_tw_feed"></div>
+
+            <div class="st-phone-tw-input-area">
+                <div class="st-phone-export-btn" id="st_phone_tw_export" style="background-color: #1DA1F2;">Send Tweets to Chat Input</div>
+            </div>
+
+            <!-- หน้าต่าง Modal สำหรับกรอกข้อมูล -->
+            <div class="st-phone-modal-overlay" id="st_phone_modal">
+                <div class="st-phone-modal-content">
+                    <div class="st-phone-modal-title" id="st_phone_modal_title">Title</div>
+                    <div id="st_phone_modal_body"></div>
+                    <div class="st-phone-modal-btns">
+                        <button class="st-phone-btn st-phone-btn-cancel" id="st_phone_modal_cancel">Cancel</button>
+                        <button class="st-phone-btn st-phone-btn-confirm" id="st_phone_modal_confirm">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    $('#st_phone_screen').html(html);
+    updateTwitterDraftsUI();
+}
+
+// ฟังก์ชันอัปเดตหน้าฟีด Twitter
+function updateTwitterDraftsUI() {
+    const feedArea = $('#st_phone_tw_feed');
+    feedArea.empty();
+
+    if (twitterDrafts.length === 0) {
+        feedArea.append(`<div style="text-align: center; opacity: 0.6; margin-top: 50px; font-family: sans-serif; font-size: 14px;">No tweets drafted.<br>Click the feather icon to tweet.</div>`);
+        return;
+    }
+
+    const charDetails = getCharDetails();
+
+    twitterDrafts.forEach((draft, index) => {
+        const privateIcon = draft.isPrivate ? `<i class="fa-solid fa-lock st-phone-tw-private-icon" title="Private"></i>` : '';
+
+        const tweetHtml = `
+            <div class="st-phone-tw-post">
+                <img src="${charDetails.avatarSrc}" class="st-phone-tw-avatar">
+                <div class="st-phone-tw-content">
+                    <div class="st-phone-tw-user-info">
+                        <span class="st-phone-tw-display-name">${draft.displayName}</span>
+                        <span class="st-phone-tw-username">@${draft.username}</span>
+                        ${privateIcon}
+                    </div>
+                    <div class="st-phone-tw-text">${draft.text}</div>
+                    <div class="st-phone-tw-stats">
+                        <div><i class="fa-regular fa-comment"></i> ${draft.replies}</div>
+                        <div><i class="fa-solid fa-retweet"></i> ${draft.retweets}</div>
+                        <div><i class="fa-regular fa-heart"></i> ${draft.likes}</div>
+                    </div>
+                    <div class="st-phone-tw-delete" data-index="${index}"><i class="fa-solid fa-trash"></i> Delete</div>
+                </div>
+            </div>
+        `;
+        feedArea.prepend(tweetHtml); // โพสต์ใหม่อยู่บนสุด
     });
 }
 
