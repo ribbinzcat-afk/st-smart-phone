@@ -48,6 +48,10 @@ async function initUI() {
                 Icon Color:
                 <input type="color" id="st_phone_icon_color" value="${settings.iconColor}">
             </label>
+            <label style="flex-direction: column; align-items: flex-start;">
+                Home Screen Wallpaper URL (Optional):
+                <input type="text" id="st_phone_wallpaper" value="${settings.wallpaper}" placeholder="Leave blank to use Avatar" style="width: 100%;">
+            </label>
             <hr>
             <div class="menu_button" id="st_phone_open_btn">Open Phone</div>
             <div class="menu_button" id="st_phone_test_noti">Test Notification</div>
@@ -118,10 +122,32 @@ function setupEvents() {
     });
     $(document).on('change', '#st_phone_icon_color', saveSettingsDebounced);
 
-    // ปุ่มเปิดโทรศัพท์ (จากเมนู และ จากปุ่มลอย)
-    $(document).on('click', '#st_phone_open_btn, #st_phone_fab', function() {
+    // อัปเดตปุ่มเปิดโทรศัพท์ (ให้ Render หน้าจอก่อนโชว์เสมอ)
+    $(document).off('click', '#st_phone_open_btn, #st_phone_fab').on('click', '#st_phone_open_btn, #st_phone_fab', function() {
+        renderHomeScreen(); // <--- เรียกใช้ฟังก์ชันนี้ก่อน
         $('#st_phone_container').fadeIn(200);
-        clearNotification(); // เปิดจอแล้วให้ลบแจ้งเตือน
+        clearNotification();
+    });
+
+        // บันทึกวอลเปเปอร์และอัปเดตหน้าจอทันที
+    $(document).on('input', '#st_phone_wallpaper', function() {
+        settings.wallpaper = this.value;
+        saveSettingsDebounced();
+        if ($('#st_phone_container').is(':visible')) {
+            renderHomeScreen();
+        }
+    });
+
+    // คลิกที่ไอคอนแอพต่างๆ (เตรียมไว้สำหรับ Phase 3)
+    $(document).on('click', '.st-phone-app-icon', function() {
+        const appName = $(this).data('app');
+        console.log("คุณกำลังเปิดแอพ:", appName);
+        // เดี๋ยวเราจะทำฟังก์ชันเปิดแต่ละแอพใน Phase ต่อไปค่ะ
+    });
+
+    // ปุ่ม Home (ด้านล่างจอ) ให้กลับมาหน้า Home Screen
+    $(document).on('click', '.st-phone-home-btn', function() {
+        renderHomeScreen();
     });
 
     // ปุ่มปิดโทรศัพท์
@@ -167,6 +193,68 @@ function setupDraggable() {
             cancel: "select, button, input, .st-phone-close, .st-phone-home-btn"
         });
     }
+}
+
+// --- Phase 2: ฟังก์ชันสำหรับหน้าจอหลัก ---
+
+// ดึงข้อมูลชื่อและรูป Avatar ของตัวละครปัจจุบัน (Best Practice ของ SillyTavern)
+function getCharDetails() {
+    const context = getContext();
+    const name = context.name2 || "Unknown";
+    // ดึงรูปจาก UI ด้านขวาโดยตรง เพื่อให้ได้ภาพที่อัปเดตเสมอ
+    const avatarSrc = $('#avatar_url_sys').attr('src') || '/img/default-avatar.png';
+    return { name, avatarSrc };
+}
+
+// สร้างและแสดงผลหน้าจอหลัก
+function renderHomeScreen() {
+    const settings = extension_settings[extensionName];
+    const charDetails = getCharDetails();
+
+    // ถ้าผู้ใช้ใส่วอลเปเปอร์ในตั้งค่า ให้ใช้รูปนั้น ถ้าไม่ใส่ ให้ใช้รูป Avatar
+    const wallpaperUrl = settings.wallpaper ? settings.wallpaper : charDetails.avatarSrc;
+
+    const homeHtml = `
+        <div class="st-phone-home-wrapper" id="st_phone_home_screen">
+            <div class="st-phone-wallpaper" style="background-image: url('${wallpaperUrl}');"></div>
+            <div class="st-phone-wallpaper-overlay"></div>
+
+            <div class="st-phone-home-content">
+                <div class="st-phone-header-profile">
+                    <img src="${charDetails.avatarSrc}" class="st-phone-profile-img" alt="Profile">
+                    <div class="st-phone-profile-name">${charDetails.name}</div>
+                </div>
+
+                <div class="st-phone-app-grid">
+                    <!-- แอพ Message -->
+                    <div class="st-phone-app-icon" data-app="message">
+                        <div class="st-phone-app-bg" style="background-color: #25D366;"><i class="fa-solid fa-comment"></i></div>
+                        <div class="st-phone-app-name">Message</div>
+                        <div class="st-phone-app-badge" id="badge_message"></div>
+                    </div>
+                    <!-- แอพ Insta -->
+                    <div class="st-phone-app-icon" data-app="insta">
+                        <div class="st-phone-app-bg" style="background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);"><i class="fa-brands fa-instagram"></i></div>
+                        <div class="st-phone-app-name">Insta</div>
+                        <div class="st-phone-app-badge" id="badge_insta"></div>
+                    </div>
+                    <!-- แอพ Twitter -->
+                    <div class="st-phone-app-icon" data-app="twitter">
+                        <div class="st-phone-app-bg" style="background-color: #1DA1F2;"><i class="fa-brands fa-twitter"></i></div>
+                        <div class="st-phone-app-name">Twitter</div>
+                        <div class="st-phone-app-badge" id="badge_twitter"></div>
+                    </div>
+                    <!-- แอพ Settings -->
+                    <div class="st-phone-app-icon" data-app="settings">
+                        <div class="st-phone-app-bg" style="background-color: #8E8E93;"><i class="fa-solid fa-gear"></i></div>
+                        <div class="st-phone-app-name">Settings</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('#st_phone_screen').html(homeHtml);
 }
 
 // เริ่มต้นการทำงานเมื่อโหลดสคริปต์
