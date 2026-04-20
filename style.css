@@ -694,3 +694,83 @@
 .st-phone-insta-post-delete {
     color: #ff3b30; font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; text-align: right; font-family: sans-serif;
 }
+
+/* =========================================
+   Twitter App (X)
+========================================= */
+.st-phone-tw-wrapper {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff; /* สีพื้นหลังโหมดสว่าง */
+    color: #0f1419; /* สีตัวหนังสือโหมดสว่าง */
+    z-index: 5;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* โหมดมืด (Dark Mode) */
+.st-phone-tw-wrapper.dark-mode {
+    background-color: #15202b;
+    color: #ffffff;
+}
+
+.st-phone-tw-header {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 15px;
+    border-bottom: 1px solid #eff3f4;
+    z-index: 10;
+}
+.st-phone-tw-wrapper.dark-mode .st-phone-tw-header { border-bottom-color: #38444d; }
+
+.st-phone-tw-logo { font-size: 20px; color: #1DA1F2; }
+.st-phone-tw-wrapper.dark-mode .st-phone-tw-logo { color: #ffffff; }
+
+.st-phone-tw-actions { display: flex; gap: 15px; font-size: 18px; cursor: pointer; }
+.st-phone-tw-actions i { transition: transform 0.1s; }
+.st-phone-tw-actions i:active { transform: scale(0.8); }
+
+.st-phone-tw-feed { flex: 1; overflow-y: auto; }
+
+/* การ์ดทวีต */
+.st-phone-tw-post {
+    padding: 15px;
+    border-bottom: 1px solid #eff3f4;
+    display: flex;
+    gap: 10px;
+}
+.st-phone-tw-wrapper.dark-mode .st-phone-tw-post { border-bottom-color: #38444d; }
+
+.st-phone-tw-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+
+.st-phone-tw-content { flex: 1; }
+
+.st-phone-tw-user-info { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
+.st-phone-tw-display-name { font-weight: bold; font-size: 15px; font-family: sans-serif; }
+.st-phone-tw-username { color: #536471; font-size: 14px; font-family: sans-serif; }
+.st-phone-tw-wrapper.dark-mode .st-phone-tw-username { color: #8b98a5; }
+.st-phone-tw-private-icon { font-size: 12px; color: #536471; }
+
+.st-phone-tw-text { font-size: 15px; line-height: 1.4; margin-bottom: 10px; word-break: break-word; font-family: sans-serif; }
+
+.st-phone-tw-stats { display: flex; gap: 20px; color: #536471; font-size: 13px; font-family: sans-serif; }
+.st-phone-tw-wrapper.dark-mode .st-phone-tw-stats { color: #8b98a5; }
+.st-phone-tw-stats div { display: flex; align-items: center; gap: 5px; }
+
+.st-phone-tw-delete {
+    color: #f4212e; font-size: 12px; cursor: pointer; margin-top: 10px; display: inline-block; font-weight: bold; font-family: sans-serif;
+}
+
+/* แถบส่ง Prompt ด้านล่างของ Twitter */
+.st-phone-tw-input-area {
+    padding: 10px 15px;
+    border-top: 1px solid #eff3f4;
+    z-index: 10;
+}
+.st-phone-tw-wrapper.dark-mode .st-phone-tw-input-area {
+    border-top-color: #38444d;
+    background-color: #15202b;
+}
