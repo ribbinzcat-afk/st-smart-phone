@@ -705,7 +705,7 @@ function updateChatDraftsUI() {
 // --- Phase 4: Insta App ---
 let instaDrafts = []; // อาร์เรย์เก็บโพสต์ที่เตรียมจะส่ง
 
-// ฟังก์ชันสร้างหน้าจอ Insta (อัปเดตแก้บั๊กจอบีบตัว)
+// ฟังก์ชันสร้างหน้าจอ Insta (อัปเดตเพิ่ม Modal ที่หายไป)
 function renderInstaApp() {
     const html = `
         <div class="st-phone-home-wrapper" style="background-color: #ffffff; z-index: 5;">
@@ -721,6 +721,18 @@ function renderInstaApp() {
 
             <div class="st-phone-input-area" style="border-top: 1px solid #efefef; padding: 10px 15px; background: #fff; z-index: 10;">
                 <div class="st-phone-export-btn" id="st_phone_insta_export" style="background-color: #E1306C;">Send Posts to Chat Input</div>
+            </div>
+
+            <!-- หน้าต่าง Modal สำหรับกรอกข้อมูล (ต้องใส่ไว้ในแอพนี้ด้วย) -->
+            <div class="st-phone-modal-overlay" id="st_phone_modal">
+                <div class="st-phone-modal-content">
+                    <div class="st-phone-modal-title" id="st_phone_modal_title">Title</div>
+                    <div id="st_phone_modal_body"></div>
+                    <div class="st-phone-modal-btns">
+                        <button class="st-phone-btn st-phone-btn-cancel" id="st_phone_modal_cancel">Cancel</button>
+                        <button class="st-phone-btn st-phone-btn-confirm" id="st_phone_modal_confirm">Confirm</button>
+                    </div>
+                </div>
             </div>
         </div>
     `;
