@@ -180,8 +180,8 @@
    Home Screen (หน้าจอหลัก)
 ========================================= */
 .st-phone-home-wrapper {
-    height: 100%; /* หรือกำหนดเป็นความสูงคงที่ เช่น 600px */
-    width: 100%;
+    position: absolute; /* เกาะติด 4 มุมของหน้าจอโทรศัพท์ */
+    top: 0; left: 0; right: 0; bottom: 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
