@@ -124,8 +124,7 @@
     flex: 1;
     background-color: #ffffff;
     position: relative;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden; /* เปลี่ยนจาก auto เป็น hidden เพื่อล็อกหน้าจอ */
 }
 
 .st-phone-footer {
@@ -170,9 +169,10 @@
    Home Screen (หน้าจอหลัก)
 ========================================= */
 .st-phone-home-wrapper {
-    position: relative;
-    width: 100%;
-    height: 100%;
+    position: absolute; /* เกาะติดขอบหน้าจอเสมอ */
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
 }
 
