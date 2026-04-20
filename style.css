@@ -1,0 +1,165 @@
+/* =========================================
+   Floating Action Button (ปุ่มลอย)
+========================================= */
+.st-phone-fab {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    cursor: pointer;
+    z-index: 9999;
+    transition: background-color 0.2s, transform 0.2s, opacity 0.2s;
+    opacity: 0.7; /* ปกติจะจาง */
+}
+
+.st-phone-fab:hover {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.st-phone-fab.active-notification {
+    opacity: 1;
+}
+
+/* จุดแดงแจ้งเตือน */
+.st-phone-badge {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    width: 12px;
+    height: 12px;
+    background-color: #ff3b30;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    display: none;
+}
+
+/* แอนิเมชันสั่นเมื่อมีแจ้งเตือน */
+@keyframes phoneShake {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(12deg); }
+    50% { transform: rotate(0deg); }
+    75% { transform: rotate(-12deg); }
+    100% { transform: rotate(0deg); }
+}
+.st-phone-shake {
+    animation: phoneShake 0.4s ease-in-out infinite;
+}
+
+/* =========================================
+   Phone Container (กรอบโทรศัพท์)
+========================================= */
+.st-phone-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 360px;
+    height: 700px;
+    background-color: #f9f9f9;
+    border-radius: 40px;
+    border: 12px solid #ffffff; /* สีเริ่มต้น */
+    box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    display: none; /* ซ่อนไว้ก่อนตอนเริ่ม */
+}
+
+/* รองรับมือถือ (Best Practice) */
+@media (max-width: 768px) {
+    .st-phone-container {
+        top: 5vh;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90vw;
+        height: 85vh;
+    }
+}
+
+.st-phone-header {
+    height: 35px;
+    background-color: inherit;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    cursor: grab;
+}
+.st-phone-header:active {
+    cursor: grabbing;
+}
+
+.st-phone-speaker {
+    width: 60px;
+    height: 6px;
+    background-color: rgba(0,0,0,0.15);
+    border-radius: 3px;
+}
+
+.st-phone-close {
+    position: absolute;
+    right: 15px;
+    cursor: pointer;
+    font-size: 18px;
+    color: rgba(0,0,0,0.4);
+    transition: color 0.2s;
+}
+.st-phone-close:hover {
+    color: #ff3b30;
+}
+
+.st-phone-screen {
+    flex: 1;
+    background-color: #ffffff;
+    position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.st-phone-footer {
+    height: 40px;
+    background-color: inherit;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: grab;
+}
+
+.st-phone-home-btn {
+    width: 120px;
+    height: 5px;
+    background-color: rgba(0,0,0,0.25);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.st-phone-home-btn:hover {
+    background-color: rgba(0,0,0,0.5);
+}
+
+/* =========================================
+   Settings Menu
+========================================= */
+.st-phone-settings-block {
+    padding: 10px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 10px;
+    margin-top: 10px;
+}
+.st-phone-settings-block label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
