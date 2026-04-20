@@ -1,13 +1,10 @@
 /* =========================================
-   Floating Action Button (ปุ่มลอย) - อัปเดตตำแหน่ง
+   Floating Action Button (ปุ่มลอย) - อัปเดตแก้บั๊กลาก
 ========================================= */
 .st-phone-fab {
     position: fixed;
-    /* ให้อยู่กึ่งกลางแนวตั้ง (หักลบความสูงปุ่มครึ่งหนึ่งคือ 30px) */
     top: 50%;
-    margin-top: -30px;
-    /* ให้อยู่กึ่งกลางแนวนอน แล้วขยับไปทางขวา 25% ของหน้าจอ */
-    left: 70%;
+    right: 30px; /* ให้อยู่ชิดขวาแทน เพื่อไม่ให้หลุดจอเวลาย่อหน้าต่าง */
     width: 60px;
     height: 60px;
     background-color: #ffffff;
@@ -18,14 +15,14 @@
     justify-content: center;
     font-size: 28px;
     cursor: pointer;
-    z-index: 99999;
-    transition: background-color 0.2s, opacity 0.2s; /* ลบ transform ออกเพื่อกันบั๊กตอนลาก */
-    opacity: 0.7; /* ปกติจะจาง */
+    z-index: 9999;
+    transition: background-color 0.2s, opacity 0.2s;
+    opacity: 0.7;
 }
 
 .st-phone-fab:hover {
     opacity: 1;
-    background-color: #f0f0f0; /* เปลี่ยนสีพื้นหลังนิดหน่อยแทนการขยายขนาด */
+    background-color: #f0f0f0;
 }
 
 .st-phone-fab.active-notification {
