@@ -774,3 +774,101 @@
     border-top-color: #38444d;
     background-color: #15202b;
 }
+
+/* =========================================
+   Settings App (แอพตั้งค่าภายในโทรศัพท์)
+========================================= */
+.st-phone-settings-wrapper {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: #f2f2f7; /* สีพื้นหลังเทาอ่อนสไตล์ iOS */
+    z-index: 5;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.st-phone-settings-header {
+    height: 50px;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    border-bottom: 1px solid #e5e5ea;
+    z-index: 10;
+}
+
+.st-phone-settings-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #000000;
+    flex: 1;
+    text-align: center;
+    margin-right: 20px; /* ชดเชยพื้นที่ปุ่ม Back ให้อยู่ตรงกลาง */
+}
+
+.st-phone-settings-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 15px;
+}
+
+.st-phone-settings-group {
+    background-color: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.st-phone-settings-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    border-bottom: 1px solid #e5e5ea;
+    font-size: 15px;
+    color: #333333;
+}
+.st-phone-settings-item:last-child {
+    border-bottom: none;
+}
+
+.st-phone-settings-item i {
+    width: 24px;
+    text-align: center;
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+.st-phone-settings-input {
+    flex: 1;
+    border: none;
+    text-align: right;
+    font-size: 14px;
+    color: #8e8e93;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+}
+.st-phone-settings-input::placeholder {
+    color: #c7c7cc;
+}
+
+/* ปรับแต่งช่องเลือกสี (Color Picker) ให้ดูมินิมอล */
+.st-phone-color-picker {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    overflow: hidden;
+}
+.st-phone-color-picker::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+.st-phone-color-picker::-webkit-color-swatch {
+    border: 1px solid #e5e5ea;
+    border-radius: 50%;
+}
