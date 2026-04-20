@@ -247,7 +247,7 @@
     font-weight: 600;
     letter-spacing: 0.5px;
     text-shadow: 0 2px 6px rgba(0,0,0,0.8);
-    /*font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;*/
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Grid สำหรับเรียงไอคอนแอพ */
@@ -288,7 +288,7 @@
     color: #ffffff;
     font-size: 11px;
     text-shadow: 0 1px 4px rgba(0,0,0,0.8);
-    /*font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;*/
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     text-align: center;
     white-space: nowrap;
 }
@@ -317,7 +317,7 @@
     align-items: center;
     padding: 0 15px;
     color: white;
-    /*font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;*/
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     z-index: 10;
     position: relative;
     border-bottom: 1px solid rgba(255,255,255,0.2);
@@ -363,7 +363,7 @@
     padding: 10px 14px;
     border-radius: 18px 18px 4px 18px;
     max-width: 80%;
-    /*font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;*/
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: 14px;
     line-height: 1.4;
     word-break: break-word;
@@ -376,7 +376,7 @@
     cursor: pointer;
     margin-top: 4px;
     margin-right: 4px;
-    /*font-family: sans-serif;*/
+    font-family: sans-serif;
 }
 .st-phone-bubble-delete:hover { color: #ff3b30; }
 
@@ -413,7 +413,7 @@
     padding: 8px 14px;
     font-size: 14px;
     outline: none;
-    /*font-family: sans-serif;*/
+    font-family: sans-serif;
     background-color: #f9f9f9;
 }
 .st-phone-text-input:focus { border-color: #007AFF; }
@@ -434,7 +434,7 @@
     font-size: 14px;
     font-weight: bold;
     cursor: pointer;
-    /*font-family: sans-serif;*/
+    font-family: sans-serif;
     transition: background-color 0.2s;
 }
 .st-phone-export-btn:hover { background-color: #1ebc5a; }
@@ -466,7 +466,7 @@
     gap: 10px;
     border-bottom: 1px solid #f0f0f0;
     color: #333;
-    /*font-family: sans-serif;*/
+    font-family: sans-serif;
 }
 .st-phone-plus-item:last-child { border-bottom: none; }
 .st-phone-plus-item:hover { background-color: #f9f9f9; color: #007AFF; }
@@ -496,7 +496,7 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    /*font-family: sans-serif;*/
+    font-family: sans-serif;
 }
 
 .st-phone-modal-title { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 5px; }
@@ -541,7 +541,7 @@
     padding: 15px;
     border-bottom: 1px solid #eee;
     font-weight: bold;
-    /*font-family: sans-serif;*/
+    font-family: sans-serif;
     background: #f9f9f9;
 }
 
@@ -581,7 +581,7 @@
     font-size: 11px;
     margin-top: 5px;
     text-align: center;
-    /*font-family: sans-serif;*/
+    font-family: sans-serif;
     color: #555;
     white-space: nowrap;
     overflow: hidden;
@@ -640,7 +640,7 @@
 }
 
 .st-phone-insta-logo {
-    /*font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;*/
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: 18px;
     font-weight: bold;
     font-style: italic;
@@ -679,7 +679,7 @@
 .st-phone-insta-post-avatar {
     width: 32px; height: 32px; border-radius: 50%; object-fit: cover; margin-right: 10px; border: 1px solid #efefef;
 }
-.st-phone-insta-post-user { font-weight: 600; font-size: 13px; color: #262626; /*font-family: sans-serif;*/ }
+.st-phone-insta-post-user { font-weight: 600; font-size: 13px; color: #262626; font-family: sans-serif; }
 
 .st-phone-insta-post-img { width: 100%; aspect-ratio: 1; object-fit: cover; }
 
@@ -687,12 +687,12 @@
 .st-phone-insta-post-icons {
     display: flex; gap: 15px; font-size: 22px; margin: 10px 0; color: #262626;
 }
-.st-phone-insta-post-likes { font-weight: bold; font-size: 13px; color: #262626; /*font-family: sans-serif;*/ margin-bottom: 5px; }
-.st-phone-insta-post-caption { font-size: 13px; color: #262626; /*font-family: sans-serif;*/ line-height: 1.4; }
+.st-phone-insta-post-likes { font-weight: bold; font-size: 13px; color: #262626; font-family: sans-serif; margin-bottom: 5px; }
+.st-phone-insta-post-caption { font-size: 13px; color: #262626; font-family: sans-serif; line-height: 1.4; }
 .st-phone-insta-post-caption span { font-weight: bold; margin-right: 5px; }
 
 .st-phone-insta-post-delete {
-    color: #ff3b30; font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; text-align: right; /*font-family: sans-serif;*/
+    color: #ff3b30; font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; text-align: right; font-family: sans-serif;
 }
 
 /* =========================================
@@ -749,19 +749,19 @@
 .st-phone-tw-content { flex: 1; }
 
 .st-phone-tw-user-info { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
-.st-phone-tw-display-name { font-weight: bold; font-size: 15px; /*font-family: sans-serif;*/ }
-.st-phone-tw-username { color: #536471; font-size: 14px; /*font-family: sans-serif;*/ }
+.st-phone-tw-display-name { font-weight: bold; font-size: 15px; font-family: sans-serif; }
+.st-phone-tw-username { color: #536471; font-size: 14px; font-family: sans-serif; }
 .st-phone-tw-wrapper.dark-mode .st-phone-tw-username { color: #8b98a5; }
 .st-phone-tw-private-icon { font-size: 12px; color: #536471; }
 
-.st-phone-tw-text { font-size: 15px; line-height: 1.4; margin-bottom: 10px; word-break: break-word; /*font-family: sans-serif;*/ }
+.st-phone-tw-text { font-size: 15px; line-height: 1.4; margin-bottom: 10px; word-break: break-word; font-family: sans-serif; }
 
-.st-phone-tw-stats { display: flex; gap: 20px; color: #536471; font-size: 13px; /*font-family: sans-serif;*/ }
+.st-phone-tw-stats { display: flex; gap: 20px; color: #536471; font-size: 13px; font-family: sans-serif; }
 .st-phone-tw-wrapper.dark-mode .st-phone-tw-stats { color: #8b98a5; }
 .st-phone-tw-stats div { display: flex; align-items: center; gap: 5px; }
 
 .st-phone-tw-delete {
-    color: #f4212e; font-size: 12px; cursor: pointer; margin-top: 10px; display: inline-block; font-weight: bold; /*font-family: sans-serif;*/
+    color: #f4212e; font-size: 12px; cursor: pointer; margin-top: 10px; display: inline-block; font-weight: bold; font-family: sans-serif;
 }
 
 /* แถบส่ง Prompt ด้านล่างของ Twitter */
@@ -785,7 +785,7 @@
     flex-direction: column;
     background-color: #f2f2f7; /* สีพื้นหลังเทาอ่อนสไตล์ iOS */
     z-index: 5;
-    /*font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;*/
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .st-phone-settings-header {
@@ -849,7 +849,7 @@
     color: #8e8e93;
     outline: none;
     background: transparent;
-    /*font-family: inherit;*/
+    font-family: inherit;
 }
 .st-phone-settings-input::placeholder {
     color: #c7c7cc;
@@ -944,7 +944,7 @@
     padding: 10px 14px;
     border-radius: 18px 18px 18px 4px;
     max-width: 80%;
-    /*font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;*/
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: 14px;
     line-height: 1.4;
     word-break: break-word;
