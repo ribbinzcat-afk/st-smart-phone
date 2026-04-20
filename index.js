@@ -273,6 +273,78 @@ function renderHomeScreen() {
     $('#st_phone_screen').html(homeHtml);
 }
 
+// --- Phase 3.1: Message App (ระบบแชทพื้นฐาน) ---
+let messageDrafts = []; // อาร์เรย์เก็บข้อความที่เตรียมจะส่ง
+
+// ฟังก์ชันสร้างหน้าจอแชท
+function renderMessageApp() {
+    const charDetails = getCharDetails();
+    const settings = extension_settings[extensionName];
+    const wallpaperUrl = settings.wallpaper ? settings.wallpaper : charDetails.avatarSrc;
+
+    const html = `
+        <div class="st-phone-home-wrapper">
+            <!-- วอลเปเปอร์เหมือนหน้าจอหลัก -->
+            <div class="st-phone-wallpaper" style="background-image: url('${wallpaperUrl}');"></div>
+            <div class="st-phone-wallpaper-overlay"></div>
+
+            <!-- Header แชท -->
+            <div class="st-phone-app-header">
+                <div class="st-phone-back-btn" title="Back"><i class="fa-solid fa-chevron-left"></i></div>
+                <div class="st-phone-app-title">${charDetails.name}</div>
+            </div>
+
+            <!-- พื้นที่แสดงบับเบิลแชท -->
+            <div class="st-phone-chat-area" id="st_phone_chat_history"></div>
+
+            <!-- แถบพิมพ์ข้อความ -->
+            <div class="st-phone-input-area">
+                <div class="st-phone-input-row">
+                    <div class="st-phone-icon-btn" id="st_phone_plus_btn" title="Add Element"><i class="fa-solid fa-plus"></i></div>
+                    <div class="st-phone-icon-btn" id="st_phone_sticker_btn" title="Sticker"><i class="fa-regular fa-face-smile"></i></div>
+                    <div class="st-phone-icon-btn" id="st_phone_image_btn" title="Image"><i class="fa-regular fa-image"></i></div>
+
+                    <input type="text" class="st-phone-text-input" id="st_phone_msg_input" placeholder="Type a message...">
+
+                    <div class="st-phone-send-btn" id="st_phone_add_draft" title="Add to Draft"><i class="fa-solid fa-paper-plane"></i></div>
+                </div>
+                <div class="st-phone-export-btn" id="st_phone_export_prompt">Send to Chat Input</div>
+            </div>
+        </div>
+    `;
+    $('#st_phone_screen').html(html);
+    updateChatDraftsUI(); // อัปเดตบับเบิลแชททันที
+}
+
+// ฟังก์ชันอัปเดตบับเบิลแชทบนหน้าจอ
+function updateChatDraftsUI() {
+    const chatArea = $('#st_phone_chat_history');
+    chatArea.empty();
+
+    if (messageDrafts.length === 0) {
+        chatArea.append(`<div style="color: rgba(255,255,255,0.6); text-align: center; margin-top: 20px; font-family: sans-serif; font-size: 13px;">No drafted messages.<br>Type below to start.</div>`);
+        return;
+    }
+
+    messageDrafts.forEach((draft, index) => {
+        let contentHtml = '';
+        if (draft.type === 'text') {
+            contentHtml = draft.text; // ตอนนี้มีแค่ text เดี๋ยว Phase หน้าจะมี sticker, slip
+        }
+
+        const bubbleHtml = `
+            <div class="st-phone-bubble-wrapper">
+                <div class="st-phone-bubble">${contentHtml}</div>
+                <div class="st-phone-bubble-delete" data-index="${index}"><i class="fa-solid fa-trash"></i> Delete</div>
+            </div>
+        `;
+        chatArea.append(bubbleHtml);
+    });
+
+    // เลื่อนหน้าจอลงล่างสุดเสมอเมื่อมีข้อความใหม่
+    chatArea.scrollTop(chatArea[0].scrollHeight);
+}
+
 // เริ่มต้นการทำงานเมื่อโหลดสคริปต์
 jQuery(async () => {
     await initUI();
