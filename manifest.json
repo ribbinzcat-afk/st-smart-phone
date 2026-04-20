@@ -1,0 +1,9 @@
+{
+    "name": "st-smart-phone",
+    "display_name": "📱 Smart Phone",
+    "description": "A minimalist, humanist smartphone extension for SillyTavern.",
+    "version": "1.0.0",
+    "author": "Assistant",
+    "js": "index.js",
+    "css": "style.css"
+}
