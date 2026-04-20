@@ -1,5 +1,5 @@
 import { saveSettingsDebounced } from '../../../../script.js';
-import { extension_settings } from "../../../extensions.js";
+import { extension_settings, getContext } from "../../../extensions.js";
 
 const extensionName = "st-smart-phone";
 
@@ -177,22 +177,22 @@ function clearNotification() {
     fab.find('.st-phone-badge').hide();
 }
 
-// 5. ระบบลากจูง (Draggable) รองรับการใช้งานมือถือ
+// 5. ระบบลากจูง (Draggable)
 function setupDraggable() {
-    if (window.innerWidth > 768) {
-        // ให้ปุ่มลอยลากได้
-        $('#st_phone_fab').draggable({
-            containment: "window",
-            cancel: ".st-phone-badge"
-        });
+    // ให้ปุ่มลอยลากได้ (ลบเงื่อนไขหน้าจอออก เพื่อให้ลากได้ตลอดยกเว้นใช้ระบบสัมผัสมือถือ)
+    $('#st_phone_fab').draggable({
+        containment: "window",
+        scroll: false,
+        cancel: ".st-phone-badge"
+    });
 
-        // ให้กรอบโทรศัพท์ลากได้ (จับที่ Header และ Footer)
-        $('#st_phone_container').draggable({
-            handle: ".st-phone-header, .st-phone-footer",
-            containment: "window",
-            cancel: "select, button, input, .st-phone-close, .st-phone-home-btn"
-        });
-    }
+    // ให้กรอบโทรศัพท์ลากได้ (จับที่ Header และ Footer)
+    $('#st_phone_container').draggable({
+        handle: ".st-phone-header, .st-phone-footer",
+        containment: "window",
+        scroll: false,
+        cancel: "select, button, input, .st-phone-close, .st-phone-home-btn"
+    });
 }
 
 // --- Phase 2: ฟังก์ชันสำหรับหน้าจอหลัก ---
