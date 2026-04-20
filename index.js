@@ -567,6 +567,40 @@ function setupEvents() {
         $('#st_phone_container').fadeOut(200);
     });
 
+        // --- Events สำหรับ Settings App (ภายในโทรศัพท์) ---
+
+    // 1. คลิกไอคอน Settings เพื่อเปิดแอพ
+    $(document).off('click', '.st-phone-app-icon[data-app="settings"]').on('click', '.st-phone-app-icon[data-app="settings"]', function() {
+        renderSettingsApp();
+    });
+
+    // 2. เปลี่ยนวอลเปเปอร์
+    $(document).on('input', '#app_setting_wallpaper', function() {
+        const settings = extension_settings[extensionName];
+        settings.wallpaper = this.value;
+        saveSettingsDebounced();
+        // อัปเดตช่อง input ในแผงควบคุมหลักของ SillyTavern ด้วยเผื่อเปิดไว้
+        $('#st_phone_wallpaper').val(this.value);
+    });
+
+    // 3. เปลี่ยนสีกรอบโทรศัพท์
+    $(document).on('input', '#app_setting_frame_color', function() {
+        const settings = extension_settings[extensionName];
+        settings.phoneColor = this.value;
+        $('#st_phone_container').css('border-color', this.value);
+        saveSettingsDebounced();
+        $('#st_phone_color').val(this.value); // ซิงค์กับแผงควบคุมหลัก
+    });
+
+    // 4. เปลี่ยนสีไอคอนปุ่มลอย
+    $(document).on('input', '#app_setting_icon_color', function() {
+        const settings = extension_settings[extensionName];
+        settings.iconColor = this.value;
+        $('#st_phone_fab').css('color', this.value);
+        saveSettingsDebounced();
+        $('#st_phone_icon_color').val(this.value); // ซิงค์กับแผงควบคุมหลัก
+    });
+
 } //ปิดฟังก์ชัน setupEvents
 
 // 4. ฟังก์ชันจัดการแจ้งเตือน
@@ -1032,6 +1066,55 @@ function handleIncomingMessage() {
             triggerNotification();
         }
     }, 500);
+}
+
+// --- Phase 7: Settings App (ภายในโทรศัพท์) ---
+
+// ฟังก์ชันสร้างหน้าจอ Settings
+function renderSettingsApp() {
+    const settings = extension_settings[extensionName];
+
+    const html = `
+        <div class="st-phone-settings-wrapper">
+            <div class="st-phone-settings-header">
+                <div class="st-phone-back-btn" style="color:#007AFF;" title="Back"><i class="fa-solid fa-chevron-left"></i></div>
+                <div class="st-phone-settings-title">Settings</div>
+            </div>
+
+            <div class="st-phone-settings-body">
+                <div style="font-size: 13px; color: #8e8e93; margin-bottom: 8px; margin-left: 10px; text-transform: uppercase;">Appearance</div>
+                <div class="st-phone-settings-group">
+                    <div class="st-phone-settings-item">
+                        <div style="display:flex; align-items:center; color:#007AFF;">
+                            <i class="fa-solid fa-image"></i> Wallpaper URL
+                        </div>
+                        <input type="text" id="app_setting_wallpaper" class="st-phone-settings-input" value="${settings.wallpaper}" placeholder="Leave blank for Avatar">
+                    </div>
+                </div>
+
+                <div style="font-size: 13px; color: #8e8e93; margin-bottom: 8px; margin-left: 10px; text-transform: uppercase;">Colors</div>
+                <div class="st-phone-settings-group">
+                    <div class="st-phone-settings-item">
+                        <div style="display:flex; align-items:center; color:#FF9500;">
+                            <i class="fa-solid fa-mobile-screen"></i> Frame Color
+                        </div>
+                        <input type="color" id="app_setting_frame_color" class="st-phone-color-picker" value="${settings.phoneColor}">
+                    </div>
+                    <div class="st-phone-settings-item">
+                        <div style="display:flex; align-items:center; color:#34C759;">
+                            <i class="fa-solid fa-circle-dot"></i> Icon Color
+                        </div>
+                        <input type="color" id="app_setting_icon_color" class="st-phone-color-picker" value="${settings.iconColor}">
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #c7c7cc;">
+                    Smart Phone Extension v1.0<br>Changes are saved automatically.
+                </div>
+            </div>
+        </div>
+    `;
+    $('#st_phone_screen').html(html);
 }
 
 // เริ่มต้นการทำงานเมื่อโหลดสคริปต์
