@@ -158,14 +158,17 @@ function setupEvents() {
     // ปุ่มทดสอบแจ้งเตือน
     $(document).on('click', '#st_phone_test_noti', triggerNotification);
 
-    // เคลียร์จุดแดงเมื่อกดเข้าแอพ
+    // เคลียร์จุดแดงเมื่อกดเข้าแอพ (อัปเดตให้ลบความจำด้วย)
     $(document).on('click', '.st-phone-app-icon[data-app="message"]', function() {
+        appNotifications.message = false;
         $('#badge_message').hide();
     });
     $(document).on('click', '.st-phone-app-icon[data-app="insta"]', function() {
+        appNotifications.insta = false;
         $('#badge_insta').hide();
     });
     $(document).on('click', '.st-phone-app-icon[data-app="twitter"]', function() {
+        appNotifications.twitter = false;
         $('#badge_twitter').hide();
     });
 
@@ -697,12 +700,10 @@ function getUserDetails() {
     return { name, avatarSrc };
 }
 
-// สร้างและแสดงผลหน้าจอหลัก
+// สร้างและแสดงผลหน้าจอหลัก (อัปเดตระบบจำจุดแดง)
 function renderHomeScreen() {
     const settings = extension_settings[extensionName];
     const charDetails = getCharDetails();
-
-    // ถ้าผู้ใช้ใส่วอลเปเปอร์ในตั้งค่า ให้ใช้รูปนั้น ถ้าไม่ใส่ ให้ใช้รูป Avatar
     const wallpaperUrl = settings.wallpaper ? settings.wallpaper : charDetails.avatarSrc;
 
     const homeHtml = `
@@ -717,25 +718,21 @@ function renderHomeScreen() {
                 </div>
 
                 <div class="st-phone-app-grid">
-                    <!-- แอพ Message -->
                     <div class="st-phone-app-icon" data-app="message">
                         <div class="st-phone-app-bg" style="background-color: #25D366;"><i class="fa-solid fa-comment"></i></div>
                         <div class="st-phone-app-name">Message</div>
-                        <div class="st-phone-app-badge" id="badge_message"></div>
+                        <div class="st-phone-app-badge" id="badge_message" style="display: ${appNotifications.message ? 'block' : 'none'};"></div>
                     </div>
-                    <!-- แอพ Insta -->
                     <div class="st-phone-app-icon" data-app="insta">
                         <div class="st-phone-app-bg" style="background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);"><i class="fa-brands fa-instagram"></i></div>
                         <div class="st-phone-app-name">Insta</div>
-                        <div class="st-phone-app-badge" id="badge_insta"></div>
+                        <div class="st-phone-app-badge" id="badge_insta" style="display: ${appNotifications.insta ? 'block' : 'none'};"></div>
                     </div>
-                    <!-- แอพ Twitter -->
                     <div class="st-phone-app-icon" data-app="twitter">
                         <div class="st-phone-app-bg" style="background-color: #1DA1F2;"><i class="fa-brands fa-twitter"></i></div>
                         <div class="st-phone-app-name">Twitter</div>
-                        <div class="st-phone-app-badge" id="badge_twitter"></div>
+                        <div class="st-phone-app-badge" id="badge_twitter" style="display: ${appNotifications.twitter ? 'block' : 'none'};"></div>
                     </div>
-                    <!-- แอพ Settings -->
                     <div class="st-phone-app-icon" data-app="settings">
                         <div class="st-phone-app-bg" style="background-color: #8E8E93;"><i class="fa-solid fa-gear"></i></div>
                         <div class="st-phone-app-name">Settings</div>
@@ -744,12 +741,13 @@ function renderHomeScreen() {
             </div>
         </div>
     `;
-
     $('#st_phone_screen').html(homeHtml);
 }
 
 // --- Phase 3.1: Message App (ระบบแชทพื้นฐาน) ---
 let messageDrafts = []; // อาร์เรย์เก็บข้อความที่เตรียมจะส่ง
+
+let appNotifications = { message: false, insta: false, twitter: false };
 
 // ฟังก์ชันสร้างหน้าจอแชท (อัปเดตเพิ่ม Modal และ Menu)
 // ฟังก์ชันสร้างหน้าจอแชท (รวมโค้ดทั้งหมดที่สมบูรณ์)
@@ -1082,16 +1080,19 @@ function handleIncomingMessage() {
         const text = lastMessage.mes;
         let hasNotification = false;
 
-        // ตรวจจับว่า AI ใช้แอพไหน
+        // ตรวจจับว่า AI ใช้แอพไหน (อัปเดตให้บันทึกความจำด้วย)
         if (text.includes('[📱 Message:') || text.includes('[🎤 Voice:') || text.includes('[💸 Slip:') || text.includes('[✨ Sticker:') || text.includes('[🖼️ Image:')) {
+            appNotifications.message = true; // บันทึกความจำ
             $('#badge_message').show();
             hasNotification = true;
         }
         if (text.includes('[📸 Insta Post:') || text.includes('[💬 Insta Comment:')) {
+            appNotifications.insta = true; // บันทึกความจำ
             $('#badge_insta').show();
             hasNotification = true;
         }
         if (text.includes('[🐦 Tweet:') || text.includes('[💬 Tweet Reply:')) {
+            appNotifications.twitter = true; // บันทึกความจำ
             $('#badge_twitter').show();
             hasNotification = true;
         }
