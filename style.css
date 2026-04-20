@@ -126,9 +126,10 @@
 .st-phone-screen {
     flex: 1;
     background-color: #ffffff;
-    position: relative; /* สำคัญมาก: เป็นจุดอ้างอิงให้กรอบด้านใน */
-    overflow: hidden;
+    position: relative;
+    overflow: hidden; /* ห้ามให้จอนอกสุดมีแถบเลื่อน */
     display: flex;
+    flex-direction: column;
 }
 
 .st-phone-footer {
@@ -175,14 +176,14 @@
 /* =========================================
    Home Screen (หน้าจอหลัก)
 ========================================= */
+/* 2. บังคับให้เนื้อหาทุกแอพ (Home, Message, Insta) ขยายเต็มจอเสมอ */
 .st-phone-home-wrapper {
-    height: 100%;
+    flex: 1;
     width: 100%;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    flex: 1;
-    min-height: 0;
+    position: relative;
+    overflow: hidden; /* ล็อกไว้ไม่ให้ยืดหด */
 }
 
 /* วอลเปเปอร์พื้นหลัง */
@@ -481,17 +482,23 @@
     align-items: center;
     backdrop-filter: blur(2px);
 }
+
+/* 3. แก้บั๊ก Modal (หน้าต่างป๊อปอัป) ที่ปุ่มโดนดันหายไป */
 .st-phone-modal-content {
     background: #ffffff;
-    width: 80%;
+    width: 85%;
+    max-height: 80%; /* ห้ามสูงเกิน 80% ของจอโทรศัพท์ */
+    overflow-y: auto; /* ถ้าเนื้อหาเยอะให้เลื่อนขึ้นลงได้ ปุ่มจะได้ไม่หาย */
     border-radius: 16px;
     padding: 20px;
+    box-sizing: border-box;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     display: flex;
     flex-direction: column;
     gap: 12px;
     font-family: sans-serif;
 }
+
 .st-phone-modal-title { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 5px; }
 .st-phone-modal-input {
     width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none;
