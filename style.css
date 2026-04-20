@@ -128,7 +128,7 @@
     background-color: #ffffff;
     position: relative; /* สำคัญมาก: เป็นจุดอ้างอิงให้กรอบด้านใน */
     overflow: hidden;
-    display: block; /* ยกเลิก Flexbox ตรงนี้เพื่อกันบั๊กตีกัน */
+    display: flex;
 }
 
 .st-phone-footer {
