@@ -874,48 +874,49 @@
 }
 
 /* =========================================
-   ULTIMATE LAYOUT FIX (แก้ปัญหาจอยืด/หด/ปุ่มตกขอบ 100%)
+   CLEAN FLEXBOX FIX (แก้ปัญหาจอยืด/หด/ปุ่มตกขอบ แบบมาตรฐาน)
 ========================================= */
 
-/* 1. ล็อกกรอบหน้าจอหลักให้คงที่ */
+/* 1. ให้หน้าจอหลักเป็นกล่อง Flex ที่พร้อมยืดหดอย่างถูกต้อง */
 .st-phone-screen {
-    flex: 1 !important;
-    background-color: #ffffff;
-    position: relative !important;
-    overflow: hidden !important;
-}
-
-/* 2. บังคับให้ทุกแอพ (Home, Message, Insta, Twitter, Settings) เต็มจอ 100% เสมอ */
-.st-phone-home-wrapper,
-.st-phone-tw-wrapper,
-.st-phone-settings-wrapper {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
+    flex: 1 1 auto !important;
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
+    position: relative !important;
 }
 
-/* 3. บังคับให้พื้นที่เนื้อหาตรงกลางเลื่อนได้ โดยไม่ดันปุ่มด้านล่างตกขอบ (min-height: 0 คือหัวใจสำคัญ) */
+/* 2. ให้ตัวคลุมของทุกแอพ ขยายเต็มพื้นที่หน้าจอเสมอ */
+.st-phone-home-wrapper,
+.st-phone-tw-wrapper,
+.st-phone-settings-wrapper,
+.st-phone-insta-wrapper {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+/* 3. ส่วนหัว และ แถบพิมพ์ด้านล่าง (ล็อกขนาดไว้ ห้ามยืด ห้ามหด ห้ามตกขอบ) */
+.st-phone-app-header,
+.st-phone-insta-header,
+.st-phone-tw-header,
+.st-phone-settings-header,
+.st-phone-input-area,
+.st-phone-tw-input-area {
+    flex: 0 0 auto !important;
+}
+
+/* 4. พื้นที่เนื้อหาตรงกลาง (ให้ยืดเต็มพื้นที่ที่เหลือ และถ้าเนื้อหายาวเกิน ให้เลื่อนขึ้นลงได้) */
+/* หัวใจสำคัญคือ min-height: 0; ที่จะป้องกันไม่ให้เนื้อหาดันปุ่มทะลุขอบล่าง */
 .st-phone-chat-area,
 .st-phone-insta-feed,
 .st-phone-tw-feed,
-.st-phone-settings-body {
-    flex: 1 !important;
+.st-phone-settings-body,
+.st-phone-home-content {
+    flex: 1 1 auto !important;
     overflow-y: auto !important;
-    min-height: 0 !important; /* <--- ตัวแก้บั๊กเนื้อหาดันปุ่มตกขอบ */
-    padding-bottom: 15px !important;
-}
-
-/* 4. ล็อกแถบพิมพ์และปุ่มส่ง Prompt ให้อยู่ล่างสุดเสมอ ห้ามโดนบีบเด็ดขาด */
-.st-phone-input-area,
-.st-phone-tw-input-area {
-    flex-shrink: 0 !important; /* <--- ตัวแก้บั๊กปุ่มโดนบีบ */
-    z-index: 10 !important;
-    position: relative !important;
+    min-height: 0 !important;
 }
