@@ -602,3 +602,21 @@
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     display: block;
 }
+
+/* =========================================
+   แก้ไขบั๊ก Flexbox (ป้องกันหน้าจอดันกันเองจนพัง)
+========================================= */
+/* 1. ห้ามบีบส่วนหัว ส่วนท้าย และแถบพิมพ์ข้อความ เด็ดขาด */
+.st-phone-header,
+.st-phone-footer,
+.st-phone-input-area,
+.st-phone-app-header {
+    flex-shrink: 0;
+}
+
+/* 2. กุญแจสำคัญ: บังคับให้พื้นที่แชทต้อง Scroll ได้ และห้ามดันจอทะลุ */
+.st-phone-screen,
+.st-phone-home-wrapper,
+.st-phone-chat-area {
+    min-height: 0;
+}
