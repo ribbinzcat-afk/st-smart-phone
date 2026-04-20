@@ -90,6 +90,8 @@
 
 .st-phone-header {
     height: 35px;
+    min-height: 35px; /* ล็อกความสูงขั้นต่ำ */
+    flex-shrink: 0; /* ห้ามโดนบีบเด็ดขาด */
     background-color: inherit;
     display: flex;
     justify-content: center;
@@ -121,16 +123,19 @@
 }
 
 .st-phone-screen {
-    flex: 1; /* ขยายเต็มพื้นที่โทรศัพท์เสมอ */
+    flex: 1; /* ขยายเต็มพื้นที่ที่เหลือ */
+    min-height: 0; /* ทริคสำคัญ! ป้องกันหน้าจอดันกรอบทะลุเมื่อเนื้อหาเยอะ */
     background-color: #ffffff;
     position: relative;
-    overflow: hidden; /* ล็อกไม่ให้หน้าจอหลักเลื่อน */
+    overflow: hidden;
     display: flex;
     flex-direction: column;
 }
 
 .st-phone-footer {
     height: 40px;
+    min-height: 40px; /* ล็อกความสูงขั้นต่ำ */
+    flex-shrink: 0; /* ห้ามโดนบีบเด็ดขาด */
     background-color: inherit;
     display: flex;
     justify-content: center;
