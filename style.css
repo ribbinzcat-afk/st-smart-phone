@@ -186,6 +186,7 @@
     flex-direction: column;
     overflow: hidden;
     position: relative;
+    flex: 1;
 }
 
 /* วอลเปเปอร์พื้นหลัง */
@@ -217,8 +218,8 @@
     position: relative;
     z-index: 3;
     width: 100%;
-    height: 100%;
     display: flex;
+    flex: 1;
     flex-direction: column;
     padding: 30px 20px;
     box-sizing: border-box;
