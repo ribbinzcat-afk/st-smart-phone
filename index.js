@@ -803,6 +803,117 @@ function getPhoneHistory() {
     return msgHistory;
 }
 
+// ฟังก์ชันดึงประวัติ Insta จากแชทหลัก
+function getInstaHistory() {
+    const context = getContext();
+    const chat = context.chat || [];
+    let history = [];
+    const userDetails = getUserDetails();
+    const botDetails = getCharDetails();
+
+    chat.forEach(msg => {
+        const text = msg.mes;
+        if (!text) return;
+
+        if (msg.is_user) {
+            // ดึงโพสต์ฝั่งผู้ใช้
+            if (text.includes('[📸 Insta App - New Post by You]:')) {
+                const imgMatch = text.match(/- Image: \[(.+?)\]/);
+                const capMatch = text.match(/- Caption: "(.+?)"/);
+                const statsMatch = text.match(/- Stats: (\d+) Likes \| (\d+) Comments/);
+                if (imgMatch) {
+                    history.push({
+                        sender: 'user', type: 'post',
+                        imgUrl: imgMatch[1],
+                        caption: capMatch ? capMatch[1] : '',
+                        likes: statsMatch ? statsMatch[1] : '0',
+                        comments: statsMatch ? statsMatch[2] : '0',
+                        avatar: userDetails.avatarSrc,
+                        name: userDetails.name
+                    });
+                }
+            }
+        } else {
+            // ดึงโพสต์และคอมเมนต์ฝั่ง AI
+            let match;
+            const postRegex = /\[📸 Insta Post:\s*Image (.+?)\s*\|\s*Caption "(.+?)"\s*\|\s*Likes (\d+)\]/gi;
+            while ((match = postRegex.exec(text)) !== null) {
+                history.push({
+                    sender: 'ai', type: 'post',
+                    imgUrl: match[1].includes('http') ? match[1] : 'https://via.placeholder.com/400?text=' + encodeURIComponent(match[1]),
+                    caption: match[2],
+                    likes: match[3],
+                    comments: '0',
+                    avatar: botDetails.avatarSrc,
+                    name: botDetails.name
+                });
+            }
+            const commentRegex = /\[💬 Insta Comment:\s*"(.+?)"\]/gi;
+            while ((match = commentRegex.exec(text)) !== null) {
+                history.push({ sender: 'ai', type: 'comment', text: match[1], avatar: botDetails.avatarSrc, name: botDetails.name });
+            }
+        }
+    });
+    return history;
+}
+
+// ฟังก์ชันดึงประวัติ Twitter จากแชทหลัก
+function getTwitterHistory() {
+    const context = getContext();
+    const chat = context.chat || [];
+    let history = [];
+    const userDetails = getUserDetails();
+    const botDetails = getCharDetails();
+    const defaultBotUser = botDetails.name.replace(/\s+/g, '').toLowerCase();
+
+    chat.forEach(msg => {
+        const text = msg.mes;
+        if (!text) return;
+
+        if (msg.is_user) {
+            // ดึงทวีตฝั่งผู้ใช้
+            if (text.includes('[🐦 Twitter App - New Tweet]:')) {
+                const nameMatch = text.match(/Name: (.+?) \(@(.+?)\) (\(Private Account\)|\(Public Account\))/);
+                const tweetMatch = text.match(/Tweet: "(.+?)"/);
+                const statsMatch = text.match(/Stats: (\d+) Replies \| (\d+) Retweets \| (\d+) Likes/);
+                if (tweetMatch && nameMatch) {
+                    history.push({
+                        sender: 'user', type: 'tweet',
+                        displayName: nameMatch[1],
+                        username: nameMatch[2],
+                        isPrivate: nameMatch[3].includes('Private'),
+                        text: tweetMatch[1],
+                        replies: statsMatch ? statsMatch[1] : '0',
+                        retweets: statsMatch ? statsMatch[2] : '0',
+                        likes: statsMatch ? statsMatch[3] : '0',
+                        avatar: userDetails.avatarSrc
+                    });
+                }
+            }
+        } else {
+            // ดึงทวีตและรีพลายฝั่ง AI
+            let match;
+            const tweetRegex = /\[🐦 Tweet:\s*"(.+?)"\]/gi;
+            while ((match = tweetRegex.exec(text)) !== null) {
+                history.push({
+                    sender: 'ai', type: 'tweet',
+                    displayName: botDetails.name,
+                    username: defaultBotUser,
+                    isPrivate: false,
+                    text: match[1],
+                    replies: '0', retweets: '0', likes: '0',
+                    avatar: botDetails.avatarSrc
+                });
+            }
+            const replyRegex = /\[💬 Tweet Reply:\s*"(.+?)"\]/gi;
+            while ((match = replyRegex.exec(text)) !== null) {
+                history.push({ sender: 'ai', type: 'reply', text: match[1], avatar: botDetails.avatarSrc, name: botDetails.name });
+            }
+        }
+    });
+    return history;
+}
+
 // ฟังก์ชันสร้างหน้าจอแชท (อัปเดตเพิ่ม Modal และ Menu)
 // ฟังก์ชันสร้างหน้าจอแชท (รวมโค้ดทั้งหมดที่สมบูรณ์)
 function renderMessageApp() {
@@ -979,39 +1090,65 @@ function renderInstaApp() {
 }
 
 // ฟังก์ชันอัปเดตหน้าฟีด Insta
+// อัปเดตหน้าฟีด Insta (แสดงประวัติ + Draft)
 function updateInstaDraftsUI() {
     const feedArea = $('#st_phone_insta_feed');
     feedArea.empty();
 
-    if (instaDrafts.length === 0) {
-        feedArea.append(`<div style="text-align: center; color: #999; margin-top: 50px; font-family: sans-serif; font-size: 14px;">No posts drafted.<br>Click '+' to create a new post.</div>`);
-        return;
+    const history = getInstaHistory();
+    const userDetails = getUserDetails();
+
+    // วาดประวัติโพสต์และคอมเมนต์
+    history.forEach(item => {
+        if (item.type === 'post') {
+            feedArea.prepend(`
+                <div class="st-phone-insta-post">
+                    <div class="st-phone-insta-post-header">
+                        <img src="${item.avatar}" class="st-phone-insta-post-avatar">
+                        <div class="st-phone-insta-post-user">${item.name}</div>
+                    </div>
+                    <img src="${item.imgUrl}" class="st-phone-insta-post-img" onerror="this.src='https://via.placeholder.com/400?text=Image+Not+Found'">
+                    <div class="st-phone-insta-post-body">
+                        <div class="st-phone-insta-post-icons"><i class="fa-regular fa-heart"></i> <i class="fa-regular fa-comment"></i> <i class="fa-regular fa-paper-plane"></i></div>
+                        <div class="st-phone-insta-post-likes">${item.likes} likes • ${item.comments} comments</div>
+                        <div class="st-phone-insta-post-caption"><span>${item.name}</span> ${item.caption}</div>
+                    </div>
+                </div>
+            `);
+        } else if (item.type === 'comment') {
+            feedArea.prepend(`
+                <div style="padding: 10px 15px; border-bottom: 1px solid #efefef; display: flex; gap: 10px; background: #fafafa;">
+                    <img src="${item.avatar}" style="width:24px; height:24px; border-radius:50%; object-fit:cover;">
+                    <div style="font-size:13px; font-family:sans-serif; color:#262626;"><b>${item.name}</b> commented: "${item.text}"</div>
+                </div>
+            `);
+        }
+    });
+
+    // วาด Draft
+    if (instaDrafts.length > 0) {
+        feedArea.prepend(`<div style="text-align:center; font-size:12px; color:#999; margin:15px 0;">--- Drafts ---</div>`);
+        instaDrafts.forEach((draft, index) => {
+            feedArea.prepend(`
+                <div class="st-phone-insta-post" style="opacity: 0.7;">
+                    <div class="st-phone-insta-post-header">
+                        <img src="${userDetails.avatarSrc}" class="st-phone-insta-post-avatar">
+                        <div class="st-phone-insta-post-user">${userDetails.name}</div>
+                    </div>
+                    <img src="${draft.imgUrl}" class="st-phone-insta-post-img" onerror="this.src='https://via.placeholder.com/400?text=Image'">
+                    <div class="st-phone-insta-post-body">
+                        <div class="st-phone-insta-post-likes">${draft.likes} likes</div>
+                        <div class="st-phone-insta-post-caption"><span>${userDetails.name}</span> ${draft.caption}</div>
+                        <div class="st-phone-insta-post-delete" data-index="${index}"><i class="fa-solid fa-trash"></i> Delete Draft</div>
+                    </div>
+                </div>
+            `);
+        });
     }
 
-    const userDetails = getUserDetails(); // ดึงชื่อและรูปผู้ใช้ (หรือตัวละคร) มาแสดงเป็นเจ้าของโพสต์
-
-    instaDrafts.forEach((draft, index) => {
-        const postHtml = `
-            <div class="st-phone-insta-post">
-                <div class="st-phone-insta-post-header">
-                    <img src="${userDetails.avatarSrc}" class="st-phone-insta-post-avatar">
-                    <div class="st-phone-insta-post-user">You</div>
-                </div>
-                <img src="${draft.imgUrl}" class="st-phone-insta-post-img" onerror="this.src='https://via.placeholder.com/400?text=Image+Not+Found'">
-                <div class="st-phone-insta-post-body">
-                    <div class="st-phone-insta-post-icons">
-                        <i class="fa-regular fa-heart"></i>
-                        <i class="fa-regular fa-comment"></i>
-                        <i class="fa-regular fa-paper-plane"></i>
-                    </div>
-                    <div class="st-phone-insta-post-likes">${draft.likes} likes • ${draft.comments} comments</div>
-                    <div class="st-phone-insta-post-caption"><span>You</span> ${draft.caption}</div>
-                    <div class="st-phone-insta-post-delete" data-index="${index}"><i class="fa-solid fa-trash"></i> Delete Post</div>
-                </div>
-            </div>
-        `;
-        feedArea.prepend(postHtml); // ใช้ prepend เพื่อให้โพสต์ใหม่อยู่บนสุด
-    });
+    if (history.length === 0 && instaDrafts.length === 0) {
+        feedArea.append(`<div style="text-align: center; color: #999; margin-top: 50px; font-family: sans-serif; font-size: 14px;">No posts yet.<br>Click '+' to create a new post.</div>`);
+    }
 }
 
 // --- Phase 5: Twitter App ---
@@ -1060,41 +1197,71 @@ function renderTwitterApp() {
 }
 
 // ฟังก์ชันอัปเดตหน้าฟีด Twitter
+// อัปเดตหน้าฟีด Twitter (แสดงประวัติ + Draft)
 function updateTwitterDraftsUI() {
     const feedArea = $('#st_phone_tw_feed');
     feedArea.empty();
 
-    if (twitterDrafts.length === 0) {
-        feedArea.append(`<div style="text-align: center; opacity: 0.6; margin-top: 50px; font-family: sans-serif; font-size: 14px;">No tweets drafted.<br>Click the feather icon to tweet.</div>`);
-        return;
-    }
-
+    const history = getTwitterHistory();
     const userDetails = getUserDetails();
 
-    twitterDrafts.forEach((draft, index) => {
-        const privateIcon = draft.isPrivate ? `<i class="fa-solid fa-lock st-phone-tw-private-icon" title="Private"></i>` : '';
-
-        const tweetHtml = `
-            <div class="st-phone-tw-post">
-                <img src="${userDetails.avatarSrc}" class="st-phone-tw-avatar">
-                <div class="st-phone-tw-content">
-                    <div class="st-phone-tw-user-info">
-                        <span class="st-phone-tw-display-name">${draft.displayName}</span>
-                        <span class="st-phone-tw-username">@${draft.username}</span>
-                        ${privateIcon}
+    // วาดประวัติทวีตและรีพลาย
+    history.forEach(item => {
+        if (item.type === 'tweet') {
+            const privateIcon = item.isPrivate ? `<i class="fa-solid fa-lock st-phone-tw-private-icon"></i>` : '';
+            feedArea.prepend(`
+                <div class="st-phone-tw-post">
+                    <img src="${item.avatar}" class="st-phone-tw-avatar">
+                    <div class="st-phone-tw-content">
+                        <div class="st-phone-tw-user-info">
+                            <span class="st-phone-tw-display-name">${item.displayName}</span>
+                            <span class="st-phone-tw-username">@${item.username}</span>
+                            ${privateIcon}
+                        </div>
+                        <div class="st-phone-tw-text">${item.text}</div>
+                        <div class="st-phone-tw-stats">
+                            <div><i class="fa-regular fa-comment"></i> ${item.replies}</div>
+                            <div><i class="fa-solid fa-retweet"></i> ${item.retweets}</div>
+                            <div><i class="fa-regular fa-heart"></i> ${item.likes}</div>
+                        </div>
                     </div>
-                    <div class="st-phone-tw-text">${draft.text}</div>
-                    <div class="st-phone-tw-stats">
-                        <div><i class="fa-regular fa-comment"></i> ${draft.replies}</div>
-                        <div><i class="fa-solid fa-retweet"></i> ${draft.retweets}</div>
-                        <div><i class="fa-regular fa-heart"></i> ${draft.likes}</div>
-                    </div>
-                    <div class="st-phone-tw-delete" data-index="${index}"><i class="fa-solid fa-trash"></i> Delete</div>
                 </div>
-            </div>
-        `;
-        feedArea.prepend(tweetHtml); // โพสต์ใหม่อยู่บนสุด
+            `);
+        } else if (item.type === 'reply') {
+            feedArea.prepend(`
+                <div style="padding: 10px 15px; border-bottom: 1px solid #eff3f4; display: flex; gap: 10px; background: rgba(29, 161, 242, 0.05);">
+                    <img src="${item.avatar}" style="width:24px; height:24px; border-radius:50%; object-fit:cover;">
+                    <div style="font-size:14px; font-family:sans-serif;"><b>${item.name}</b> replied: "${item.text}"</div>
+                </div>
+            `);
+        }
     });
+
+    // วาด Draft
+    if (twitterDrafts.length > 0) {
+        feedArea.prepend(`<div style="text-align:center; font-size:12px; color:#999; margin:15px 0;">--- Drafts ---</div>`);
+        twitterDrafts.forEach((draft, index) => {
+            const privateIcon = draft.isPrivate ? `<i class="fa-solid fa-lock st-phone-tw-private-icon"></i>` : '';
+            feedArea.prepend(`
+                <div class="st-phone-tw-post" style="opacity: 0.7;">
+                    <img src="${userDetails.avatarSrc}" class="st-phone-tw-avatar">
+                    <div class="st-phone-tw-content">
+                        <div class="st-phone-tw-user-info">
+                            <span class="st-phone-tw-display-name">${draft.displayName}</span>
+                            <span class="st-phone-tw-username">@${draft.username}</span>
+                            ${privateIcon}
+                        </div>
+                        <div class="st-phone-tw-text">${draft.text}</div>
+                        <div class="st-phone-tw-delete" data-index="${index}"><i class="fa-solid fa-trash"></i> Delete Draft</div>
+                    </div>
+                </div>
+            `);
+        });
+    }
+
+    if (history.length === 0 && twitterDrafts.length === 0) {
+        feedArea.append(`<div style="text-align: center; opacity: 0.6; margin-top: 50px; font-family: sans-serif; font-size: 14px;">No tweets yet.<br>Click the feather icon to tweet.</div>`);
+    }
 }
 
 // --- Phase 6: System Prompt & Notifications ---
