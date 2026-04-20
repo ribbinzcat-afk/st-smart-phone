@@ -511,6 +511,7 @@ function renderHomeScreen() {
 let messageDrafts = []; // อาร์เรย์เก็บข้อความที่เตรียมจะส่ง
 
 // ฟังก์ชันสร้างหน้าจอแชท (อัปเดตเพิ่ม Modal และ Menu)
+// ฟังก์ชันสร้างหน้าจอแชท (รวมโค้ดทั้งหมดที่สมบูรณ์)
 function renderMessageApp() {
     const charDetails = getCharDetails();
     const settings = extension_settings[extensionName];
@@ -518,16 +519,20 @@ function renderMessageApp() {
 
     const html = `
         <div class="st-phone-home-wrapper">
+            <!-- วอลเปเปอร์ -->
             <div class="st-phone-wallpaper" style="background-image: url('${wallpaperUrl}');"></div>
             <div class="st-phone-wallpaper-overlay"></div>
 
+            <!-- ส่วนหัว -->
             <div class="st-phone-app-header">
                 <div class="st-phone-back-btn" title="Back"><i class="fa-solid fa-chevron-left"></i></div>
                 <div class="st-phone-app-title">${charDetails.name}</div>
             </div>
 
+            <!-- พื้นที่แชท (ส่วนนี้จะยืดหดและ Scroll ได้) -->
             <div class="st-phone-chat-area" id="st_phone_chat_history"></div>
 
+            <!-- แถบพิมพ์ข้อความ (ล็อกอยู่ด้านล่างเสมอ) -->
             <div class="st-phone-input-area">
                 <!-- เมนู + -->
                 <div class="st-phone-plus-menu" id="st_phone_plus_menu">
@@ -544,17 +549,6 @@ function renderMessageApp() {
                     <div class="st-phone-send-btn" id="st_phone_add_draft" title="Add to Draft"><i class="fa-solid fa-paper-plane"></i></div>
                 </div>
                 <div class="st-phone-export-btn" id="st_phone_export_prompt">Send to Chat Input</div>
-            
-            <!-- หน้าต่างคลังมีเดีย (Sticker / Image Picker) -->
-            <div class="st-phone-media-picker" id="st_phone_media_picker">
-                <div class="st-phone-picker-header">
-                    <div class="st-phone-picker-close" id="st_phone_picker_close">Close</div>
-                    <div id="st_phone_picker_title">Select</div>
-                    <div class="st-phone-picker-add" id="st_phone_picker_add"><i class="fa-solid fa-plus"></i> Add New</div>
-                </div>
-                <div class="st-phone-picker-grid" id="st_phone_picker_grid"></div>
-            </div>
-
             </div>
 
             <!-- หน้าต่าง Modal สำหรับกรอกข้อมูล -->
@@ -567,6 +561,16 @@ function renderMessageApp() {
                         <button class="st-phone-btn st-phone-btn-confirm" id="st_phone_modal_confirm">Confirm</button>
                     </div>
                 </div>
+            </div>
+
+            <!-- หน้าต่างคลังมีเดีย (Sticker / Image Picker) -->
+            <div class="st-phone-media-picker" id="st_phone_media_picker">
+                <div class="st-phone-picker-header">
+                    <div class="st-phone-picker-close" id="st_phone_picker_close">Close</div>
+                    <div id="st_phone_picker_title">Select</div>
+                    <div class="st-phone-picker-add" id="st_phone_picker_add"><i class="fa-solid fa-plus"></i> Add New</div>
+                </div>
+                <div class="st-phone-picker-grid" id="st_phone_picker_grid"></div>
             </div>
         </div>
     `;
