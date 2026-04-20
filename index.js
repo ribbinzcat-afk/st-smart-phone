@@ -157,6 +157,67 @@ function setupEvents() {
 
     // ปุ่มทดสอบแจ้งเตือน
     $(document).on('click', '#st_phone_test_noti', triggerNotification);
+
+        // --- Events สำหรับ Message App ---
+
+    // 1. คลิกไอคอน Message เพื่อเปิดแอพแชท
+    $(document).off('click', '.st-phone-app-icon[data-app="message"]').on('click', '.st-phone-app-icon[data-app="message"]', function() {
+        renderMessageApp();
+    });
+
+    // 2. ปุ่ม Back (กลับหน้า Home)
+    $(document).on('click', '.st-phone-back-btn', function() {
+        renderHomeScreen();
+    });
+
+    // 3. พิมพ์ข้อความแล้วกดปุ่ม "ส่ง (จรวด)" เพื่อนำเข้า Draft
+    $(document).on('click', '#st_phone_add_draft', function() {
+        const input = $('#st_phone_msg_input');
+        const text = input.val().trim();
+        if (text) {
+            messageDrafts.push({ type: 'text', text: text });
+            input.val(''); // ล้างช่องพิมพ์
+            updateChatDraftsUI();
+        }
+    });
+
+    // 4. กด Enter ในช่องพิมพ์ เพื่อส่งข้อความเข้า Draft
+    $(document).on('keypress', '#st_phone_msg_input', function(e) {
+        if (e.which === 13) {
+            $('#st_phone_add_draft').click();
+        }
+    });
+
+    // 5. ปุ่มลบข้อความ (ถ้าร่างผิด)
+    $(document).on('click', '.st-phone-bubble-delete', function() {
+        const index = $(this).data('index');
+        messageDrafts.splice(index, 1); // ลบออกจากอาร์เรย์
+        updateChatDraftsUI();
+    });
+
+    // 6. ปุ่ม "Send to Chat Input" (ส่งออก Prompt)
+    $(document).on('click', '#st_phone_export_prompt', function() {
+        if (messageDrafts.length === 0) return;
+
+        // สร้าง Prompt Format ให้ AI เข้าใจว่าเป็นแชท
+        let promptText = `\n[📱 Message to {{char}}]:\n`;
+        messageDrafts.forEach(draft => {
+            if (draft.type === 'text') {
+                promptText += `You: ${draft.text}\n`;
+            }
+        });
+
+        // ดึงช่องพิมพ์หลักของ SillyTavern และแทรกข้อความลงไป
+        const stInput = $('#send_textarea');
+        const currentVal = stInput.val();
+        stInput.val(currentVal + promptText).trigger('input');
+
+        // เคลียร์ Draft และย่อโทรศัพท์ลงให้ผู้ใช้กดส่งเอง
+        messageDrafts = [];
+        updateChatDraftsUI();
+        $('#st_phone_container').fadeOut(200);
+    });
+
 }
 
 // 4. ฟังก์ชันจัดการแจ้งเตือน
