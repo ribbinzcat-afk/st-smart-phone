@@ -286,7 +286,7 @@ function setupEvents() {
             const text = $('#modal_voice_text').val().trim() || '...';
             messageDrafts.push({ type: 'voice', text: text });
         }
-        // --- เพิ่มโค้ดส่วนนี้เข้าไป ---
+
         else if (currentModalType === 'add_media') {
             const name = $('#modal_media_name').val().trim() || 'Untitled';
             const url = $('#modal_media_url').val().trim();
@@ -299,10 +299,23 @@ function setupEvents() {
             }
         }
 
+        else if (currentModalType === 'insta_post') {
+            const imgUrl = $('#modal_insta_img').val().trim() || 'https://via.placeholder.com/400';
+            const caption = $('#modal_insta_caption').val().trim() || '';
+            const likes = $('#modal_insta_likes').val().trim() || '0';
+            const comments = $('#modal_insta_comments').val().trim() || '0';
+
+            instaDrafts.push({ imgUrl, caption, likes, comments });
+            updateInstaDraftsUI();
+            $('#st_phone_modal').fadeOut(200);
+            return; // หยุดการทำงานตรงนี้สำหรับ Insta
+        }
+
         if (currentModalType !== 'add_media') {
             updateChatDraftsUI();
         }
         $('#st_phone_modal').fadeOut(200);
+
     });
 
         // --- Events สำหรับ Sticker & Image Library ---
@@ -395,7 +408,57 @@ function setupEvents() {
         }
     });
 
-}
+    // --- Events สำหรับ Insta App ---
+
+    // 1. คลิกไอคอน Insta เพื่อเปิดแอพ
+    $(document).off('click', '.st-phone-app-icon[data-app="insta"]').on('click', '.st-phone-app-icon[data-app="insta"]', function() {
+        renderInstaApp();
+    });
+
+    // 2. คลิกปุ่ม (+) เพื่อสร้างโพสต์ (ใช้ Modal ตัวเดิม)
+    $(document).on('click', '#st_phone_insta_add', function() {
+        currentModalType = 'insta_post';
+        $('#st_phone_modal_title').text('Create Insta Post');
+        $('#st_phone_modal_body').html(`
+            <input type="text" id="modal_insta_img" class="st-phone-modal-input" placeholder="Image URL (https://...)">
+            <input type="text" id="modal_insta_caption" class="st-phone-modal-input" placeholder="Write a caption..." style="margin-top:10px;">
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <input type="number" id="modal_insta_likes" class="st-phone-modal-input" placeholder="Likes (e.g. 1200)">
+                <input type="number" id="modal_insta_comments" class="st-phone-modal-input" placeholder="Comments (e.g. 45)">
+            </div>
+        `);
+        $('#st_phone_modal').fadeIn(200);
+    });
+
+    // 3. ปุ่ม Delete โพสต์
+    $(document).on('click', '.st-phone-insta-post-delete', function() {
+        const index = $(this).data('index');
+        instaDrafts.splice(index, 1);
+        updateInstaDraftsUI();
+    });
+
+    // 4. ปุ่มส่งออก Prompt ของ Insta
+    $(document).on('click', '#st_phone_insta_export', function() {
+        if (instaDrafts.length === 0) return;
+
+        let promptText = `\n[📸 Insta App - New Post by You]:\n`;
+        instaDrafts.forEach(draft => {
+            promptText += `- Image: [${draft.imgUrl}]\n`;
+            promptText += `- Caption: "${draft.caption}"\n`;
+            promptText += `- Stats: ${draft.likes} Likes | ${draft.comments} Comments\n\n`;
+        });
+        promptText += `(Assistant, please react or comment on this post as your character!)\n`;
+
+        const stInput = $('#send_textarea');
+        const currentVal = stInput.val();
+        stInput.val(currentVal + promptText).trigger('input');
+
+        instaDrafts = []; // ล้าง Draft
+        updateInstaDraftsUI();
+        $('#st_phone_container').fadeOut(200);
+    });
+
+} //ปิดฟังก์ชัน setupEvents
 
 // 4. ฟังก์ชันจัดการแจ้งเตือน
 function triggerNotification() {
@@ -637,6 +700,68 @@ function updateChatDraftsUI() {
     });
 
     chatArea.scrollTop(chatArea[0].scrollHeight);
+}
+
+// --- Phase 4: Insta App ---
+let instaDrafts = []; // อาร์เรย์เก็บโพสต์ที่เตรียมจะส่ง
+
+// ฟังก์ชันสร้างหน้าจอ Insta
+function renderInstaApp() {
+    const html = `
+        <div class="st-phone-insta-wrapper">
+            <div class="st-phone-insta-header">
+                <div class="st-phone-back-btn" style="color:#262626;" title="Back"><i class="fa-solid fa-chevron-left"></i></div>
+                <div class="st-phone-insta-logo">Insta</div>
+                <div class="st-phone-insta-actions">
+                    <i class="fa-regular fa-square-plus" id="st_phone_insta_add" title="Create Post"></i>
+                </div>
+            </div>
+
+            <div class="st-phone-insta-feed" id="st_phone_insta_feed"></div>
+
+            <div class="st-phone-input-area" style="border-top: 1px solid #efefef; padding: 10px 15px; background: #fff;">
+                <div class="st-phone-export-btn" id="st_phone_insta_export" style="background-color: #E1306C;">Send Posts to Chat Input</div>
+            </div>
+        </div>
+    `;
+    $('#st_phone_screen').html(html);
+    updateInstaDraftsUI();
+}
+
+// ฟังก์ชันอัปเดตหน้าฟีด Insta
+function updateInstaDraftsUI() {
+    const feedArea = $('#st_phone_insta_feed');
+    feedArea.empty();
+
+    if (instaDrafts.length === 0) {
+        feedArea.append(`<div style="text-align: center; color: #999; margin-top: 50px; font-family: sans-serif; font-size: 14px;">No posts drafted.<br>Click '+' to create a new post.</div>`);
+        return;
+    }
+
+    const charDetails = getCharDetails(); // ดึงชื่อและรูปผู้ใช้ (หรือตัวละคร) มาแสดงเป็นเจ้าของโพสต์
+
+    instaDrafts.forEach((draft, index) => {
+        const postHtml = `
+            <div class="st-phone-insta-post">
+                <div class="st-phone-insta-post-header">
+                    <img src="${charDetails.avatarSrc}" class="st-phone-insta-post-avatar">
+                    <div class="st-phone-insta-post-user">You</div>
+                </div>
+                <img src="${draft.imgUrl}" class="st-phone-insta-post-img" onerror="this.src='https://via.placeholder.com/400?text=Image+Not+Found'">
+                <div class="st-phone-insta-post-body">
+                    <div class="st-phone-insta-post-icons">
+                        <i class="fa-regular fa-heart"></i>
+                        <i class="fa-regular fa-comment"></i>
+                        <i class="fa-regular fa-paper-plane"></i>
+                    </div>
+                    <div class="st-phone-insta-post-likes">${draft.likes} likes • ${draft.comments} comments</div>
+                    <div class="st-phone-insta-post-caption"><span>You</span> ${draft.caption}</div>
+                    <div class="st-phone-insta-post-delete" data-index="${index}"><i class="fa-solid fa-trash"></i> Delete Post</div>
+                </div>
+            </div>
+        `;
+        feedArea.prepend(postHtml); // ใช้ prepend เพื่อให้โพสต์ใหม่อยู่บนสุด
+    });
 }
 
 // เริ่มต้นการทำงานเมื่อโหลดสคริปต์
