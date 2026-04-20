@@ -195,24 +195,27 @@ function setupEvents() {
         updateChatDraftsUI();
     });
 
-    // 6. ปุ่ม "Send to Chat Input" (ส่งออก Prompt)
-    $(document).on('click', '#st_phone_export_prompt', function() {
+    // 6. ปุ่ม "Send to Chat Input" (อัปเดตรองรับ Element)
+    $(document).off('click', '#st_phone_export_prompt').on('click', '#st_phone_export_prompt', function() {
         if (messageDrafts.length === 0) return;
 
-        // สร้าง Prompt Format ให้ AI เข้าใจว่าเป็นแชท
-        let promptText = `\n[📱 Message to {{char}}]:\n`;
+        let promptText = `\n[📱 Message to Assistant]:\n`;
         messageDrafts.forEach(draft => {
             if (draft.type === 'text') {
                 promptText += `You: ${draft.text}\n`;
+            } else if (draft.type === 'slip') {
+                promptText += `[💸 You sent a Transfer Slip: Amount ${draft.amount} to ${draft.to}]\n`;
+            } else if (draft.type === 'loc') {
+                promptText += `[📍 You shared a Location: ${draft.place}]\n`;
+            } else if (draft.type === 'voice') {
+                promptText += `[🎤 You sent a Voice Message: "${draft.text}"]\n`;
             }
         });
 
-        // ดึงช่องพิมพ์หลักของ SillyTavern และแทรกข้อความลงไป
         const stInput = $('#send_textarea');
         const currentVal = stInput.val();
         stInput.val(currentVal + promptText).trigger('input');
 
-        // เคลียร์ Draft และย่อโทรศัพท์ลงให้ผู้ใช้กดส่งเอง
         messageDrafts = [];
         updateChatDraftsUI();
         $('#st_phone_container').fadeOut(200);
