@@ -195,7 +195,7 @@ function setupEvents() {
         updateChatDraftsUI();
     });
 
-    // 6. ปุ่ม "Send to Chat Input" (อัปเดตรองรับ Element)
+    // 6. ปุ่ม "Send to Chat Input" (อัปเดตรองรับ Sticker/Image)
     $(document).off('click', '#st_phone_export_prompt').on('click', '#st_phone_export_prompt', function() {
         if (messageDrafts.length === 0) return;
 
@@ -209,6 +209,10 @@ function setupEvents() {
                 promptText += `[📍 You shared a Location: ${draft.place}]\n`;
             } else if (draft.type === 'voice') {
                 promptText += `[🎤 You sent a Voice Message: "${draft.text}"]\n`;
+            } else if (draft.type === 'sticker') {
+                promptText += `[✨ You sent a Sticker: "${draft.name}"]\n`;
+            } else if (draft.type === 'image') {
+                promptText += `[🖼️ You sent an Image: "${draft.name}"]\n`;
             }
         });
 
@@ -269,8 +273,8 @@ function setupEvents() {
         $('#st_phone_modal').fadeOut(200);
     });
 
-    // ยืนยันข้อมูลใน Modal และเพิ่มลง Draft
-    $(document).on('click', '#st_phone_modal_confirm', function() {
+    // ยืนยันข้อมูลใน Modal และเพิ่มลง Draft (อัปเดตเพิ่ม add_media)
+    $(document).off('click', '#st_phone_modal_confirm').on('click', '#st_phone_modal_confirm', function() {
         if (currentModalType === 'slip') {
             const amount = $('#modal_slip_amount').val().trim() || '0';
             const to = $('#modal_slip_to').val().trim() || 'Unknown';
@@ -282,9 +286,113 @@ function setupEvents() {
             const text = $('#modal_voice_text').val().trim() || '...';
             messageDrafts.push({ type: 'voice', text: text });
         }
+        // --- เพิ่มโค้ดส่วนนี้เข้าไป ---
+        else if (currentModalType === 'add_media') {
+            const name = $('#modal_media_name').val().trim() || 'Untitled';
+            const url = $('#modal_media_url').val().trim();
+            if (url) {
+                const settings = extension_settings[extensionName];
+                if (!settings.mediaLibrary) settings.mediaLibrary = { stickers: [], images: [] };
+                settings.mediaLibrary[currentPickerType].push({ name, url });
+                saveSettingsDebounced(); // บันทึกรูปลงระบบ
+                renderMediaGrid(); // รีเฟรชคลัง
+            }
+        }
+
+        if (currentModalType !== 'add_media') {
+            updateChatDraftsUI();
+        }
+        $('#st_phone_modal').fadeOut(200);
+    });
+
+        // --- Events สำหรับ Sticker & Image Library ---
+    let currentPickerType = ''; // เก็บค่าว่าเป็น 'stickers' หรือ 'images'
+
+    // ฟังก์ชันวาด Grid รูปภาพ
+    function renderMediaGrid() {
+        const settings = extension_settings[extensionName];
+        const grid = $('#st_phone_picker_grid');
+        grid.empty();
+
+        // ถ้าไม่มีข้อมูล ให้สร้าง Array เปล่ารอไว้
+        if (!settings.mediaLibrary) settings.mediaLibrary = { stickers: [], images: [] };
+        const items = settings.mediaLibrary[currentPickerType] || [];
+
+        if (items.length === 0) {
+            grid.html(`<div style="grid-column: 1 / -1; text-align: center; color: #999; font-family: sans-serif; font-size: 13px; margin-top: 20px;">No ${currentPickerType} found.<br>Click 'Add New' to upload via URL.</div>`);
+            return;
+        }
+
+        items.forEach((item, index) => {
+            grid.append(`
+                <div class="st-phone-media-item">
+                    <img src="${item.url}" alt="${item.name}" data-index="${index}" class="st-phone-select-media">
+                    <span>${item.name}</span>
+                    <div class="st-phone-media-delete" data-index="${index}" title="Delete"><i class="fa-solid fa-xmark"></i></div>
+                </div>
+            `);
+        });
+    }
+
+    // เปิดคลังสติกเกอร์
+    $(document).on('click', '#st_phone_sticker_btn', function() {
+        currentPickerType = 'stickers';
+        $('#st_phone_picker_title').text('Stickers');
+        renderMediaGrid();
+        $('#st_phone_media_picker').slideDown(200);
+    });
+
+    // เปิดคลังรูปภาพ
+    $(document).on('click', '#st_phone_image_btn', function() {
+        currentPickerType = 'images';
+        $('#st_phone_picker_title').text('Images');
+        renderMediaGrid();
+        $('#st_phone_media_picker').slideDown(200);
+    });
+
+    // ปิดคลัง
+    $(document).on('click', '#st_phone_picker_close', function() {
+        $('#st_phone_media_picker').slideUp(200);
+    });
+
+    // ปุ่ม "Add New" ในคลัง (ใช้ Modal ตัวเดิมที่มีอยู่แล้ว)
+    $(document).on('click', '#st_phone_picker_add', function() {
+        currentModalType = 'add_media';
+        $('#st_phone_modal_title').text(`Add New ${currentPickerType === 'stickers' ? 'Sticker' : 'Image'}`);
+        $('#st_phone_modal_body').html(`
+            <input type="text" id="modal_media_name" class="st-phone-modal-input" placeholder="Name (e.g. Happy Cat)">
+            <input type="text" id="modal_media_url" class="st-phone-modal-input" placeholder="Image URL (https://...)" style="margin-top:10px;">
+        `);
+        $('#st_phone_modal').fadeIn(200);
+    });
+
+    // เลือกรูป/สติกเกอร์เพื่อส่งเข้า Draft
+    $(document).on('click', '.st-phone-select-media', function() {
+        const index = $(this).data('index');
+        const settings = extension_settings[extensionName];
+        const item = settings.mediaLibrary[currentPickerType][index];
+
+        messageDrafts.push({
+            type: currentPickerType === 'stickers' ? 'sticker' : 'image',
+            name: item.name,
+            url: item.url
+        });
 
         updateChatDraftsUI();
-        $('#st_phone_modal').fadeOut(200);
+        $('#st_phone_media_picker').slideUp(200); // ส่งแล้วปิดคลังให้อัตโนมัติ
+    });
+
+    // ลบรูปออกจากคลัง
+    $(document).on('click', '.st-phone-media-delete', function(e) {
+        e.stopPropagation(); // กันไม่ให้เผลอกดส่งรูปตอนกดลบ
+        const index = $(this).data('index');
+        const settings = extension_settings[extensionName];
+
+        if (confirm('Delete this item from library?')) {
+            settings.mediaLibrary[currentPickerType].splice(index, 1);
+            saveSettingsDebounced(); // บันทึกการลบลงระบบ
+            renderMediaGrid(); // รีเฟรชคลัง
+        }
     });
 
 }
@@ -436,6 +544,17 @@ function renderMessageApp() {
                     <div class="st-phone-send-btn" id="st_phone_add_draft" title="Add to Draft"><i class="fa-solid fa-paper-plane"></i></div>
                 </div>
                 <div class="st-phone-export-btn" id="st_phone_export_prompt">Send to Chat Input</div>
+            
+            <!-- หน้าต่างคลังมีเดีย (Sticker / Image Picker) -->
+            <div class="st-phone-media-picker" id="st_phone_media_picker">
+                <div class="st-phone-picker-header">
+                    <div class="st-phone-picker-close" id="st_phone_picker_close">Close</div>
+                    <div id="st_phone_picker_title">Select</div>
+                    <div class="st-phone-picker-add" id="st_phone_picker_add"><i class="fa-solid fa-plus"></i> Add New</div>
+                </div>
+                <div class="st-phone-picker-grid" id="st_phone_picker_grid"></div>
+            </div>
+
             </div>
 
             <!-- หน้าต่าง Modal สำหรับกรอกข้อมูล -->
@@ -495,6 +614,12 @@ function updateChatDraftsUI() {
                         <i class="fa-solid fa-circle-play"></i> Voice Message
                     </div>
                     <div class="st-phone-voice-text">"${draft.text}"</div>
+                </div>`;
+        }
+        else if (draft.type === 'sticker' || draft.type === 'image') {
+            contentHtml = `
+                <div class="st-phone-bubble-media">
+                    <img src="${draft.url}" alt="${draft.name}">
                 </div>`;
         }
 
