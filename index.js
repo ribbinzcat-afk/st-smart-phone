@@ -705,29 +705,7 @@ function updateChatDraftsUI() {
 // --- Phase 4: Insta App ---
 let instaDrafts = []; // อาร์เรย์เก็บโพสต์ที่เตรียมจะส่ง
 
-// ฟังก์ชันสร้างหน้าจอ Insta
-function renderInstaApp() {
-    const html = `
-        <div class="st-phone-insta-wrapper">
-            <div class="st-phone-insta-header">
-                <div class="st-phone-back-btn" style="color:#262626;" title="Back"><i class="fa-solid fa-chevron-left"></i></div>
-                <div class="st-phone-insta-logo">Insta</div>
-                <div class="st-phone-insta-actions">
-                    <i class="fa-regular fa-square-plus" id="st_phone_insta_add" title="Create Post"></i>
-                </div>
-            </div>
-
-            <div class="st-phone-insta-feed" id="st_phone_insta_feed"></div>
-
-            <div class="st-phone-input-area" style="border-top: 1px solid #efefef; padding: 10px 15px; background: #fff;">
-                <div class="st-phone-export-btn" id="st_phone_insta_export" style="background-color: #E1306C;">Send Posts to Chat Input</div>
-            </div>
-        </div>
-    `;
-    $('#st_phone_screen').html(html);
-    updateInstaDraftsUI();
-    
-}// ฟังก์ชันสร้างหน้าจอ Insta (อัปเดตแก้บั๊กจอบีบตัว)
+// ฟังก์ชันสร้างหน้าจอ Insta (อัปเดตแก้บั๊กจอบีบตัว)
 function renderInstaApp() {
     const html = `
         <div class="st-phone-home-wrapper" style="background-color: #ffffff; z-index: 5;">
