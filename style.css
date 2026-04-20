@@ -141,7 +141,6 @@
     align-items: center;
     cursor: grab;
     overflow: hidden;
-    border: 2px solid red;
 }
 
 .st-phone-home-btn {
