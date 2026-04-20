@@ -880,23 +880,24 @@
 /* 1. เปลี่ยนหน้าจอหลักให้เป็น Flex Container และล็อกไม่ให้ Scroll */
 .st-phone-screen {
     flex: 1 !important;
+    min-height: 0 !important; /* <--- เพิ่มบรรทัดนี้เพื่อกันเนื้อหาดันขอบ */
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
-    height: 100% !important; /* บังคับให้รู้จักความสูงที่แท้จริง */
 }
 
-/* 2. บังคับให้ตัวคลุมทุกแอพ ยืดเต็มพื้นที่หน้าจอ 100% เสมอ (ห้ามหดตามเนื้อหา) */
+/* 2. บังคับให้ตัวคลุมทุกแอพ ยืดเต็มพื้นที่หน้าจอเสมอ (ห้ามหดตามเนื้อหา) */
 .st-phone-home-wrapper,
 .st-phone-insta-wrapper,
 .st-phone-tw-wrapper,
 .st-phone-settings-wrapper {
     flex: 1 !important;
+    min-height: 0 !important; /* <--- เพิ่มบรรทัดนี้เพื่อกันเนื้อหาดันขอบ */
     display: flex !important;
     flex-direction: column !important;
     width: 100% !important;
-    height: 100% !important;
     overflow: hidden !important;
+    /* ลบ height: 100% !important; ออกไปเลยค่ะ! */
 }
 
 /* 3. พื้นที่แชทและฟีด ให้ยืดเต็มพื้นที่ที่เหลือ และ Scroll ได้เฉพาะตรงนี้ */
