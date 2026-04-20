@@ -874,49 +874,55 @@
 }
 
 /* =========================================
-   CLEAN FLEXBOX FIX (แก้ปัญหาจอยืด/หด/ปุ่มตกขอบ แบบมาตรฐาน)
+   THE REAL FLEXBOX FIX (แก้บั๊กจอยืด/หด แบบสมบูรณ์แบบ 100%)
 ========================================= */
 
-/* 1. ให้หน้าจอหลักเป็นกล่อง Flex ที่พร้อมยืดหดอย่างถูกต้อง */
+/* 1. ล็อกกรอบหน้าจอหลัก (ต้องมี min-height: 0 เพื่อไม่ให้ทะลุกรอบโทรศัพท์) */
 .st-phone-screen {
-    flex: 1 1 auto !important;
+    flex: 1 !important;
+    min-height: 0 !important; /* <--- หัวใจสำคัญที่ 1 */
     display: flex !important;
     flex-direction: column !important;
-    overflow: hidden !important;
     position: relative !important;
+    overflow: hidden !important;
+    width: 100% !important;
 }
 
-/* 2. ให้ตัวคลุมของทุกแอพ ขยายเต็มพื้นที่หน้าจอเสมอ */
+/* 2. ล็อกตัวคลุมของทุกแอพให้เต็มจอพอดี (ห้ามยืด ห้ามหด) */
 .st-phone-home-wrapper,
+.st-phone-insta-wrapper,
 .st-phone-tw-wrapper,
-.st-phone-settings-wrapper,
-.st-phone-insta-wrapper {
-    flex: 1 1 auto !important;
+.st-phone-settings-wrapper {
+    flex: 1 !important;
+    min-height: 0 !important; /* <--- หัวใจสำคัญที่ 2 */
     display: flex !important;
     flex-direction: column !important;
     width: 100% !important;
     height: 100% !important;
-    overflow: hidden !important;
+    position: relative !important;
+    z-index: 5 !important;
 }
 
-/* 3. ส่วนหัว และ แถบพิมพ์ด้านล่าง (ล็อกขนาดไว้ ห้ามยืด ห้ามหด ห้ามตกขอบ) */
+/* 3. พื้นที่เนื้อหาตรงกลาง (ให้ยืดเต็มที่ และเลื่อนขึ้นลงได้ถ้าเนื้อหาเยอะ) */
+.st-phone-chat-area,
+.st-phone-insta-feed,
+.st-phone-tw-feed,
+.st-phone-settings-body,
+.st-phone-home-content {
+    flex: 1 !important;
+    min-height: 0 !important; /* <--- หัวใจสำคัญที่ 3 (ป้องกันเนื้อหาดันปุ่มตกขอบ) */
+    overflow-y: auto !important;
+    width: 100% !important;
+}
+
+/* 4. ส่วนหัว และ แถบพิมพ์ด้านล่าง (ล็อกขนาดไว้ ห้ามโดนบีบจนแบน) */
 .st-phone-app-header,
 .st-phone-insta-header,
 .st-phone-tw-header,
 .st-phone-settings-header,
 .st-phone-input-area,
 .st-phone-tw-input-area {
-    flex: 0 0 auto !important;
-}
-
-/* 4. พื้นที่เนื้อหาตรงกลาง (ให้ยืดเต็มพื้นที่ที่เหลือ และถ้าเนื้อหายาวเกิน ให้เลื่อนขึ้นลงได้) */
-/* หัวใจสำคัญคือ min-height: 0; ที่จะป้องกันไม่ให้เนื้อหาดันปุ่มทะลุขอบล่าง */
-.st-phone-chat-area,
-.st-phone-insta-feed,
-.st-phone-tw-feed,
-.st-phone-settings-body,
-.st-phone-home-content {
-    flex: 1 1 auto !important;
-    overflow-y: auto !important;
-    min-height: 0 !important;
+    flex-shrink: 0 !important; /* <--- ป้องกันปุ่มโดนบีบหายไป */
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
