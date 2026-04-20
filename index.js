@@ -322,14 +322,15 @@ function setupEvents() {
 
         else if (currentModalType === 'insta_post') {
             const imgUrl = $('#modal_insta_img').val().trim() || 'https://via.placeholder.com/400';
+            const imageDesc = $('#modal_insta_desc').val().trim() || 'A photo uploaded by user'; // เก็บคำอธิบายรูป
             const caption = $('#modal_insta_caption').val().trim() || '';
             const likes = $('#modal_insta_likes').val().trim() || '0';
             const comments = $('#modal_insta_comments').val().trim() || '0';
 
-            instaDrafts.push({ imgUrl, caption, likes, comments });
+            instaDrafts.push({ imgUrl, imageDesc, caption, likes, comments });
             updateInstaDraftsUI();
             $('#st_phone_modal').fadeOut(200);
-            return; // หยุดการทำงานตรงนี้สำหรับ Insta
+            return;
         }
 
         else if (currentModalType === 'tw_post') {
@@ -459,6 +460,7 @@ function setupEvents() {
         $('#st_phone_modal_title').text('Create Insta Post');
         $('#st_phone_modal_body').html(`
             <input type="text" id="modal_insta_img" class="st-phone-modal-input" placeholder="Image URL (https://...)">
+            <input type="text" id="modal_insta_desc" class="st-phone-modal-input" placeholder="Image Description (For AI to understand)" style="margin-top:10px; border-color:#FF9500;">
             <input type="text" id="modal_insta_caption" class="st-phone-modal-input" placeholder="Write a caption..." style="margin-top:10px;">
             <div style="display:flex; gap:10px; margin-top:10px;">
                 <input type="number" id="modal_insta_likes" class="st-phone-modal-input" placeholder="Likes (e.g. 1200)">
@@ -482,10 +484,10 @@ function setupEvents() {
         let promptText = `\n[📸 Insta App - New Post by You]:\n`;
         instaDrafts.forEach(draft => {
             promptText += `- Image: [${draft.imgUrl}]\n`;
+            promptText += `- [Image Description for AI: ${draft.imageDesc}]\n`; // เพิ่มบรรทัดนี้
             promptText += `- Caption: "${draft.caption}"\n`;
             promptText += `- Stats: ${draft.likes} Likes | ${draft.comments} Comments\n\n`;
         });
-        promptText += `(Assistant, please react or comment on this post as your character!)\n`;
 
         const stInput = $('#send_textarea');
         const currentVal = stInput.val();
@@ -601,6 +603,16 @@ function setupEvents() {
         $('#st_phone_icon_color').val(this.value); // ซิงค์กับแผงควบคุมหลัก
     });
 
+        // บันทึกรูปโปรไฟล์ User / Bot
+    $(document).on('input', '#app_setting_user_avatar', function() {
+        extension_settings[extensionName].userAvatar = this.value;
+        saveSettingsDebounced();
+    });
+    $(document).on('input', '#app_setting_bot_avatar', function() {
+        extension_settings[extensionName].botAvatar = this.value;
+        saveSettingsDebounced();
+    });
+
 } //ปิดฟังก์ชัน setupEvents
 
 // 4. ฟังก์ชันจัดการแจ้งเตือน
@@ -642,23 +654,46 @@ function setupDraggable() {
 // --- Phase 2: ฟังก์ชันสำหรับหน้าจอหลัก ---
 
 // ดึงข้อมูลชื่อและรูป Avatar ของตัวละครปัจจุบัน (Best Practice ของ SillyTavern)
+// ดึงข้อมูลชื่อและรูป Avatar ของ Bot (รองรับการตั้งค่า Manual)
 function getCharDetails() {
+    const settings = extension_settings[extensionName];
     const context = getContext();
     const name = context.name2 || "Unknown";
     let avatarSrc = '';
 
-    if (context.characters && context.this_chid !== undefined && context.characters[context.this_chid]) {
+    // ถ้ามีการตั้งค่ารูปลิงก์แบบ Manual ให้ใช้รูปนั้นก่อน
+    if (settings.botAvatar && settings.botAvatar.trim() !== '') {
+        avatarSrc = settings.botAvatar;
+    } else if (context.characters && context.this_chid !== undefined && context.characters[context.this_chid]) {
         avatarSrc = `/characters/${context.characters[context.this_chid].avatar}`;
     } else {
         const domSrc = $('#avatar_url_sys').attr('src');
         if (domSrc && domSrc.trim() !== '') {
             avatarSrc = domSrc;
         } else {
-            // เปลี่ยนฟันหนูคู่ (") เป็นฟันหนูเดี่ยว (') ทั้งหมด เพื่อไม่ให้โค้ด HTML แตก
             avatarSrc = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect width='100' height='100' fill='%23ccc'/><circle cx='50' cy='40' r='20' fill='%23fff'/><path d='M20 100 Q50 60 80 100' stroke='%23fff' stroke-width='5' fill='none'/></svg>";
         }
     }
+    return { name, avatarSrc };
+}
 
+// ดึงข้อมูลชื่อและรูป Avatar ของ User (รองรับการตั้งค่า Manual)
+function getUserDetails() {
+    const settings = extension_settings[extensionName];
+    const context = getContext();
+    const name = context.name1 || "You";
+    let avatarSrc = '';
+
+    if (settings.userAvatar && settings.userAvatar.trim() !== '') {
+        avatarSrc = settings.userAvatar;
+    } else {
+        const domSrc = $('#avatar_url_user').attr('src');
+        if (domSrc && domSrc.trim() !== '') {
+            avatarSrc = domSrc;
+        } else {
+            avatarSrc = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect width='100' height='100' fill='%23007AFF'/><circle cx='50' cy='40' r='20' fill='%23fff'/><path d='M20 100 Q50 60 80 100' stroke='%23fff' stroke-width='5' fill='none'/></svg>";
+        }
+    }
     return { name, avatarSrc };
 }
 
@@ -893,13 +928,13 @@ function updateInstaDraftsUI() {
         return;
     }
 
-    const charDetails = getCharDetails(); // ดึงชื่อและรูปผู้ใช้ (หรือตัวละคร) มาแสดงเป็นเจ้าของโพสต์
+    const userDetails = getUserDetails(); // ดึงชื่อและรูปผู้ใช้ (หรือตัวละคร) มาแสดงเป็นเจ้าของโพสต์
 
     instaDrafts.forEach((draft, index) => {
         const postHtml = `
             <div class="st-phone-insta-post">
                 <div class="st-phone-insta-post-header">
-                    <img src="${charDetails.avatarSrc}" class="st-phone-insta-post-avatar">
+                    <img src="${userDetails.avatarSrc}" class="st-phone-insta-post-avatar">
                     <div class="st-phone-insta-post-user">You</div>
                 </div>
                 <img src="${draft.imgUrl}" class="st-phone-insta-post-img" onerror="this.src='https://via.placeholder.com/400?text=Image+Not+Found'">
@@ -974,14 +1009,14 @@ function updateTwitterDraftsUI() {
         return;
     }
 
-    const charDetails = getCharDetails();
+    const userDetails = getUserDetails();
 
     twitterDrafts.forEach((draft, index) => {
         const privateIcon = draft.isPrivate ? `<i class="fa-solid fa-lock st-phone-tw-private-icon" title="Private"></i>` : '';
 
         const tweetHtml = `
             <div class="st-phone-tw-post">
-                <img src="${charDetails.avatarSrc}" class="st-phone-tw-avatar">
+                <img src="${userDetails.avatarSrc}" class="st-phone-tw-avatar">
                 <div class="st-phone-tw-content">
                     <div class="st-phone-tw-user-info">
                         <span class="st-phone-tw-display-name">${draft.displayName}</span>
@@ -1070,7 +1105,7 @@ function handleIncomingMessage() {
 
 // --- Phase 7: Settings App (ภายในโทรศัพท์) ---
 
-// ฟังก์ชันสร้างหน้าจอ Settings
+// ฟังก์ชันสร้างหน้าจอ Settings (อัปเดตเพิ่มช่องใส่รูป User/Bot)
 function renderSettingsApp() {
     const settings = extension_settings[extensionName];
 
@@ -1082,34 +1117,32 @@ function renderSettingsApp() {
             </div>
 
             <div class="st-phone-settings-body">
-                <div style="font-size: 13px; color: #8e8e93; margin-bottom: 8px; margin-left: 10px; text-transform: uppercase;">Appearance</div>
+                <div style="font-size: 13px; color: #8e8e93; margin-bottom: 8px; margin-left: 10px; text-transform: uppercase;">Profiles & Appearance</div>
                 <div class="st-phone-settings-group">
                     <div class="st-phone-settings-item">
-                        <div style="display:flex; align-items:center; color:#007AFF;">
-                            <i class="fa-solid fa-image"></i> Wallpaper URL
-                        </div>
-                        <input type="text" id="app_setting_wallpaper" class="st-phone-settings-input" value="${settings.wallpaper}" placeholder="Leave blank for Avatar">
+                        <div style="display:flex; align-items:center; color:#007AFF;"><i class="fa-solid fa-user"></i> User Avatar URL</div>
+                        <input type="text" id="app_setting_user_avatar" class="st-phone-settings-input" value="${settings.userAvatar || ''}" placeholder="Leave blank for Default">
+                    </div>
+                    <div class="st-phone-settings-item">
+                        <div style="display:flex; align-items:center; color:#FF2D55;"><i class="fa-solid fa-robot"></i> Bot Avatar URL</div>
+                        <input type="text" id="app_setting_bot_avatar" class="st-phone-settings-input" value="${settings.botAvatar || ''}" placeholder="Leave blank for Default">
+                    </div>
+                    <div class="st-phone-settings-item">
+                        <div style="display:flex; align-items:center; color:#5856D6;"><i class="fa-solid fa-image"></i> Wallpaper URL</div>
+                        <input type="text" id="app_setting_wallpaper" class="st-phone-settings-input" value="${settings.wallpaper || ''}" placeholder="Leave blank for Bot Avatar">
                     </div>
                 </div>
 
                 <div style="font-size: 13px; color: #8e8e93; margin-bottom: 8px; margin-left: 10px; text-transform: uppercase;">Colors</div>
                 <div class="st-phone-settings-group">
                     <div class="st-phone-settings-item">
-                        <div style="display:flex; align-items:center; color:#FF9500;">
-                            <i class="fa-solid fa-mobile-screen"></i> Frame Color
-                        </div>
+                        <div style="display:flex; align-items:center; color:#FF9500;"><i class="fa-solid fa-mobile-screen"></i> Frame Color</div>
                         <input type="color" id="app_setting_frame_color" class="st-phone-color-picker" value="${settings.phoneColor}">
                     </div>
                     <div class="st-phone-settings-item">
-                        <div style="display:flex; align-items:center; color:#34C759;">
-                            <i class="fa-solid fa-circle-dot"></i> Icon Color
-                        </div>
+                        <div style="display:flex; align-items:center; color:#34C759;"><i class="fa-solid fa-circle-dot"></i> Icon Color</div>
                         <input type="color" id="app_setting_icon_color" class="st-phone-color-picker" value="${settings.iconColor}">
                     </div>
-                </div>
-
-                <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #c7c7cc;">
-                    Smart Phone Extension v1.0<br>Changes are saved automatically.
                 </div>
             </div>
         </div>
