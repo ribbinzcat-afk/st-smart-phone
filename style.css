@@ -874,49 +874,57 @@
 }
 
 /* =========================================
-   THE FINAL LAYOUT FIX (แก้ปัญหาจอยืด/หด 100%)
+   ABSOLUTE BULLETPROOF FIX (ท่าไม้ตาย ล็อกพิกัดตายตัว 100%)
 ========================================= */
 
-/* 1. เปลี่ยนหน้าจอหลักให้เป็น Flex Container และล็อกไม่ให้ Scroll */
+/* 1. ล็อกหน้าจอให้อยู่ระหว่าง Header (35px) และ Footer (40px) แบบตายตัว ห้ามยืดห้ามหดเด็ดขาด! */
 .st-phone-screen {
-    flex: 1 !important;
-    min-height: 0 !important; /* <--- เพิ่มบรรทัดนี้เพื่อกันเนื้อหาดันขอบ */
+    position: absolute !important;
+    top: 35px !important;
+    bottom: 40px !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
+    background-color: #ffffff !important;
 }
 
-/* 2. บังคับให้ตัวคลุมทุกแอพ ยืดเต็มพื้นที่หน้าจอเสมอ (ห้ามหดตามเนื้อหา) */
+/* 2. บังคับให้แอพทุกตัว ขยายเต็มพื้นที่หน้าจอ 100% เสมอ */
 .st-phone-home-wrapper,
 .st-phone-insta-wrapper,
 .st-phone-tw-wrapper,
 .st-phone-settings-wrapper {
-    flex: 1 !important;
-    min-height: 0 !important; /* <--- เพิ่มบรรทัดนี้เพื่อกันเนื้อหาดันขอบ */
+    position: absolute !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
     display: flex !important;
     flex-direction: column !important;
-    width: 100% !important;
     overflow: hidden !important;
-    /* ลบ height: 100% !important; ออกไปเลยค่ะ! */
 }
 
-/* 3. พื้นที่แชทและฟีด ให้ยืดเต็มพื้นที่ที่เหลือ และ Scroll ได้เฉพาะตรงนี้ */
+/* 3. พื้นที่เนื้อหาตรงกลาง ให้ยืดเต็มที่ เลื่อนได้ และไม่ดันปุ่มตกขอบ */
 .st-phone-chat-area,
 .st-phone-insta-feed,
 .st-phone-tw-feed,
 .st-phone-settings-body,
 .st-phone-home-content {
-    flex: 1 !important;
+    flex: 1 1 auto !important;
     overflow-y: auto !important;
-    min-height: 0 !important; /* ป้องกันเนื้อหาดันปุ่มทะลุขอบ */
+    min-height: 0 !important;
 }
 
-/* 4. ล็อกแถบพิมพ์และส่วนหัว ห้ามยืดหดและห้ามโดนบีบ */
+/* 4. ล็อกส่วนหัวและแถบพิมพ์ด้านล่างให้อยู่กับที่ ห้ามโดนบีบ */
 .st-phone-app-header,
 .st-phone-insta-header,
 .st-phone-tw-header,
 .st-phone-settings-header,
 .st-phone-input-area,
 .st-phone-tw-input-area {
-    flex-shrink: 0 !important;
+    flex: 0 0 auto !important;
 }
