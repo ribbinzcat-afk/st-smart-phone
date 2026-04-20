@@ -1,4 +1,4 @@
-import { saveSettingsDebounced } from '../../../../script.js';
+import { saveSettingsDebounced, setExtensionPrompt, eventSource, event_types } from '../../../../script.js';
 import { extension_settings, getContext } from "../../../extensions.js";
 
 const extensionName = "st-smart-phone";
@@ -93,6 +93,7 @@ async function initUI() {
     `;
     $('body').append(phoneHtml);
 
+    updateSystemPrompt(); // <--- เพิ่มบรรทัดนี้
     setupEvents();
     setupDraggable();
 }
@@ -142,7 +143,6 @@ function setupEvents() {
     $(document).on('click', '.st-phone-app-icon', function() {
         const appName = $(this).data('app');
         console.log("คุณกำลังเปิดแอพ:", appName);
-        // เดี๋ยวเราจะทำฟังก์ชันเปิดแต่ละแอพใน Phase ต่อไปค่ะ
     });
 
     // ปุ่ม Home (ด้านล่างจอ) ให้กลับมาหน้า Home Screen
@@ -157,6 +157,27 @@ function setupEvents() {
 
     // ปุ่มทดสอบแจ้งเตือน
     $(document).on('click', '#st_phone_test_noti', triggerNotification);
+
+    // เคลียร์จุดแดงเมื่อกดเข้าแอพ
+    $(document).on('click', '.st-phone-app-icon[data-app="message"]', function() {
+        $('#badge_message').hide();
+    });
+    $(document).on('click', '.st-phone-app-icon[data-app="insta"]', function() {
+        $('#badge_insta').hide();
+    });
+    $(document).on('click', '.st-phone-app-icon[data-app="twitter"]', function() {
+        $('#badge_twitter').hide();
+    });
+
+    // อัปเดต Prompt ทุกครั้งที่มีการเพิ่ม/ลบ สติกเกอร์หรือรูปภาพ
+    $(document).on('click', '#st_phone_modal_confirm, .st-phone-media-delete', function() {
+        if (currentModalType === 'add_media' || $(this).hasClass('st-phone-media-delete')) {
+            setTimeout(updateSystemPrompt, 500);
+        }
+    });
+
+    // ดักจับข้อความใหม่จาก AI
+    eventSource.on(event_types.MESSAGE_RECEIVED, handleIncomingMessage);
 
         // --- Events สำหรับ Message App ---
 
@@ -945,6 +966,72 @@ function updateTwitterDraftsUI() {
         `;
         feedArea.prepend(tweetHtml); // โพสต์ใหม่อยู่บนสุด
     });
+}
+
+// --- Phase 6: System Prompt & Notifications ---
+
+// ฟังก์ชันอัปเดตคำสั่งสอน AI เบื้องหลัง (System Prompt)
+function updateSystemPrompt() {
+    const settings = extension_settings[extensionName];
+    const library = settings.mediaLibrary || { stickers: [], images: [] };
+
+    // ดึงรายชื่อสติกเกอร์และรูปภาพมาให้ AI รู้จัก
+    const stickerNames = library.stickers.map(s => s.name).join(', ') || 'None';
+    const imageNames = library.images.map(i => i.name).join(', ') || 'None';
+
+    // สร้าง Prompt สอน AI (กระชับและเข้าใจง่าย)
+    const promptString = `
+[📱 Smart Phone Extension Active]
+You have a smartphone. You can interact with the user via apps using these EXACT formats anywhere in your response:
+- Message: [📱 Message: <your text>]
+- Voice Message: [🎤 Voice: "<your text>"]
+- Transfer Slip: [💸 Slip: Amount <number> to User]
+- Send Sticker: [✨ Sticker: <name>] (Available in library: ${stickerNames})
+- Send Image: [🖼️ Image: <name>] (Available in library: ${imageNames})
+- Insta Post: [📸 Insta Post: Image <url/name> | Caption "<text>" | Likes <number>]
+- Insta Comment: [💬 Insta Comment: "<text>"]
+- Tweet: [🐦 Tweet: "<text>"]
+- Tweet Reply: [💬 Tweet Reply: "<text>"]
+Feel free to use these tags naturally to simulate using your phone!
+    `.trim();
+
+    // ส่ง Prompt เข้าสู่ระบบ (0 = IN_PROMPT, 1 = Depth, true = Add newline, 0 = SYSTEM ROLE)
+    setExtensionPrompt(extensionName, promptString, 0, 1, true, 0);
+}
+
+// ฟังก์ชันตรวจจับข้อความจาก AI และแจ้งเตือนจุดแดง
+function handleIncomingMessage() {
+    // หน่วงเวลาเล็กน้อยรอให้ข้อความโหลดเสร็จ
+    setTimeout(() => {
+        const context = getContext();
+        const chat = context.chat;
+        if (!chat || chat.length === 0) return;
+
+        const lastMessage = chat[chat.length - 1];
+        if (lastMessage.is_user) return; // ถ้าเป็นข้อความเราเอง ไม่ต้องแจ้งเตือน
+
+        const text = lastMessage.mes;
+        let hasNotification = false;
+
+        // ตรวจจับว่า AI ใช้แอพไหน
+        if (text.includes('[📱 Message:') || text.includes('[🎤 Voice:') || text.includes('[💸 Slip:') || text.includes('[✨ Sticker:') || text.includes('[🖼️ Image:')) {
+            $('#badge_message').show();
+            hasNotification = true;
+        }
+        if (text.includes('[📸 Insta Post:') || text.includes('[💬 Insta Comment:')) {
+            $('#badge_insta').show();
+            hasNotification = true;
+        }
+        if (text.includes('[🐦 Tweet:') || text.includes('[💬 Tweet Reply:')) {
+            $('#badge_twitter').show();
+            hasNotification = true;
+        }
+
+        // ถ้ามีการแจ้งเตือน ให้ปุ่มลอยสั่นและขึ้นจุดแดง
+        if (hasNotification) {
+            triggerNotification();
+        }
+    }, 500);
 }
 
 // เริ่มต้นการทำงานเมื่อโหลดสคริปต์
