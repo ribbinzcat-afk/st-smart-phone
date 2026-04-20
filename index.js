@@ -259,24 +259,20 @@ function setupDraggable() {
 // --- Phase 2: ฟังก์ชันสำหรับหน้าจอหลัก ---
 
 // ดึงข้อมูลชื่อและรูป Avatar ของตัวละครปัจจุบัน (Best Practice ของ SillyTavern)
-// ดึงข้อมูลชื่อและรูป Avatar ของตัวละครปัจจุบัน (อัปเดตแก้บั๊ก 404)
 function getCharDetails() {
     const context = getContext();
     const name = context.name2 || "Unknown";
     let avatarSrc = '';
 
-    // วิธีที่ 1: ดึงจากข้อมูลตัวละครโดยตรง (แม่นยำที่สุด)
     if (context.characters && context.this_chid !== undefined && context.characters[context.this_chid]) {
         avatarSrc = `/characters/${context.characters[context.this_chid].avatar}`;
-    }
-    // วิธีที่ 2: ดึงจากหน้าจอ UI (กรณีฉุกเฉิน)
-    else {
+    } else {
         const domSrc = $('#avatar_url_sys').attr('src');
         if (domSrc && domSrc.trim() !== '') {
             avatarSrc = domSrc;
         } else {
-            // Fallback: ถ้ารูปไม่มีจริงๆ จะใช้รูปโปรไฟล์สีเทาแบบฝังโค้ด (ไม่มีทางติด 404 แน่นอน)
-            avatarSrc = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23ccc"/><circle cx="50" cy="40" r="20" fill="%23fff"/><path d="M20 100 Q50 60 80 100" stroke="%23fff" stroke-width="5" fill="none"/></svg>';
+            // เปลี่ยนฟันหนูคู่ (") เป็นฟันหนูเดี่ยว (') ทั้งหมด เพื่อไม่ให้โค้ด HTML แตก
+            avatarSrc = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect width='100' height='100' fill='%23ccc'/><circle cx='50' cy='40' r='20' fill='%23fff'/><path d='M20 100 Q50 60 80 100' stroke='%23fff' stroke-width='5' fill='none'/></svg>";
         }
     }
 
