@@ -953,3 +953,13 @@
 .st-phone-bubble-ai-slip {
     background-color: #ffffff; color: #333; padding: 12px 16px; border-radius: 16px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid #ddd;
 }
+
+/* =========================================
+   แก้บั๊กคลังสติกเกอร์/รูปภาพ เลื่อนไม่ได้
+========================================= */
+.st-phone-picker-grid {
+    flex: 1 !important;
+    min-height: 0 !important; /* <--- เวทมนตร์ปลดล็อกการ Scroll */
+    overflow-y: auto !important; /* บังคับให้เลื่อนขึ้นลงได้ */
+    padding-bottom: 30px !important; /* เพิ่มพื้นที่ด้านล่างนิดนึง จะได้เลื่อนดูรูปสุดท้ายได้ชัดๆ */
+}
