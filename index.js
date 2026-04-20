@@ -223,20 +223,20 @@ function setupEvents() {
     $(document).off('click', '#st_phone_export_prompt').on('click', '#st_phone_export_prompt', function() {
         if (messageDrafts.length === 0) return;
 
-        let promptText = `\n[📱 Message to ${charDetails.name}]:\n`;
+        let promptText = `\n[📱 Message to Assistant]:\n`;
         messageDrafts.forEach(draft => {
             if (draft.type === 'text') {
-                promptText += `${userDetails.name}: ${draft.text}\n`;
+                promptText += `You: ${draft.text}\n`;
             } else if (draft.type === 'slip') {
-                promptText += `[💸 ${userDetails.name} sent a Transfer Slip: Amount ${draft.amount} to ${draft.to}]\n`;
+                promptText += `[💸 You sent a Transfer Slip: Amount ${draft.amount} to ${draft.to}]\n`;
             } else if (draft.type === 'loc') {
-                promptText += `[📍 ${userDetails.name} shared a Location: ${draft.place}]\n`;
+                promptText += `[📍 You shared a Location: ${draft.place}]\n`;
             } else if (draft.type === 'voice') {
-                promptText += `[🎤 ${userDetails.name} sent a Voice Message: "${draft.text}"]\n`;
+                promptText += `[🎤 You sent a Voice Message: "${draft.text}"]\n`;
             } else if (draft.type === 'sticker') {
-                promptText += `[✨ ${userDetails.name} sent a Sticker: "${draft.name}"]\n`;
+                promptText += `[✨ You sent a Sticker: "${draft.name}"]\n`;
             } else if (draft.type === 'image') {
-                promptText += `[🖼️ ${userDetails.name} sent an Image: "${draft.name}"]\n`;
+                promptText += `[🖼️ You sent an Image: "${draft.name}"]\n`;
             }
         });
 
@@ -484,7 +484,7 @@ function setupEvents() {
     $(document).on('click', '#st_phone_insta_export', function() {
         if (instaDrafts.length === 0) return;
 
-        let promptText = `\n[📸 Insta App - New Post by ${userDetails.name}]:\n`;
+        let promptText = `\n[📸 Insta App - New Post by You]:\n`;
         instaDrafts.forEach(draft => {
             promptText += `- Image: [${draft.imgUrl}]\n`;
             promptText += `- [Image Description for AI: ${draft.imageDesc}]\n`; // เพิ่มบรรทัดนี้
@@ -561,6 +561,7 @@ function setupEvents() {
             promptText += `Tweet: "${draft.text}"\n`;
             promptText += `Stats: ${draft.replies} Replies | ${draft.retweets} Retweets | ${draft.likes} Likes\n\n`;
         });
+        promptText += `(Assistant, please reply, retweet, or react to this tweet as your character!)\n`;
 
         const stInput = $('#send_textarea');
         const currentVal = stInput.val();
@@ -762,20 +763,20 @@ function getPhoneHistory() {
             // ดึงข้อความฝั่งผู้ใช้
             const lines = text.split('\n');
             lines.forEach(line => {
-                if (line.startsWith('${userDetails.name}: ')) msgHistory.push({ sender: 'user', type: 'text', text: line.replace('${userDetails.name}: ', '').trim() });
-                else if (line.includes('[💸 ${userDetails.name} sent a Transfer Slip:')) {
+                if (line.startsWith('You: ')) msgHistory.push({ sender: 'user', type: 'text', text: line.replace('You: ', '').trim() });
+                else if (line.includes('[💸 You sent a Transfer Slip:')) {
                     const match = line.match(/Amount (.+?) to (.+?)\]/);
                     if (match) msgHistory.push({ sender: 'user', type: 'slip', amount: match[1], to: match[2] });
-                } else if (line.includes('[📍 ${userDetails.name} shared a Location:')) {
+                } else if (line.includes('[📍 You shared a Location:')) {
                     const match = line.match(/Location: (.+?)\]/);
                     if (match) msgHistory.push({ sender: 'user', type: 'loc', place: match[1] });
-                } else if (line.includes('[🎤 ${userDetails.name} sent a Voice Message:')) {
+                } else if (line.includes('[🎤 You sent a Voice Message:')) {
                     const match = line.match(/Voice Message: "(.+?)"\]/);
                     if (match) msgHistory.push({ sender: 'user', type: 'voice', text: match[1] });
-                } else if (line.includes('[✨ ${userDetails.name} sent a Sticker:')) {
+                } else if (line.includes('[✨ You sent a Sticker:')) {
                     const match = line.match(/Sticker: "(.+?)"\]/);
                     if (match) msgHistory.push({ sender: 'user', type: 'sticker', name: match[1] });
-                } else if (line.includes('[🖼️ ${userDetails.name} sent an Image:')) {
+                } else if (line.includes('[🖼️ You sent an Image:')) {
                     const match = line.match(/Image: "(.+?)"\]/);
                     if (match) msgHistory.push({ sender: 'user', type: 'image', name: match[1] });
                 }
@@ -816,7 +817,7 @@ function getInstaHistory() {
 
         if (msg.is_user) {
             // ดึงโพสต์ฝั่งผู้ใช้
-            if (text.includes('[📸 Insta App - New Post by ${userDetails.name}]:')) {
+            if (text.includes('[📸 Insta App - New Post by You]:')) {
                 const imgMatch = text.match(/- Image: \[(.+?)\]/);
                 const capMatch = text.match(/- Caption: "(.+?)"/);
                 const statsMatch = text.match(/- Stats: (\d+) Likes \| (\d+) Comments/);
