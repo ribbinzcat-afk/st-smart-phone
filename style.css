@@ -516,7 +516,7 @@
    Media Picker (คลังสติกเกอร์และรูปภาพ)
 ========================================= */
 .st-phone-media-picker {
-    position: absolute;
+    position: absolute; /* ลอยทับหน้าจอ */
     bottom: 0;
     left: 0;
     width: 100%;
@@ -525,7 +525,7 @@
     border-radius: 20px 20px 0 0;
     box-shadow: 0 -5px 20px rgba(0,0,0,0.15);
     z-index: 15;
-    display: none; /* ซ่อนไว้ก่อน */
+    display: none; /* บังคับซ่อนไว้จนกว่าจะกดปุ่ม */
     flex-direction: column;
     overflow: hidden;
 }
