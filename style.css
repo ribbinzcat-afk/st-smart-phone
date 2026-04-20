@@ -123,7 +123,7 @@
 }
 
 .st-phone-screen {
-    flex-shrink: 0; /* ขยายเต็มพื้นที่ที่เหลือ */
+    flex: 1; /* ขยายเต็มพื้นที่ที่เหลือ */
     min-height: 0; /* ทริคสำคัญ! ป้องกันหน้าจอดันกรอบทะลุเมื่อเนื้อหาเยอะ */
     background-color: #ffffff;
     position: relative;
@@ -134,6 +134,7 @@
 
 .st-phone-footer {
     height: 40px;
+    min-height: 0;
     flex: 1; 
     background-color: inherit;
     display: flex;
