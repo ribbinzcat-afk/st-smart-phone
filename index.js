@@ -217,6 +217,72 @@ function setupEvents() {
         updateChatDraftsUI();
         $('#st_phone_container').fadeOut(200);
     });
+    
+    // --- Events สำหรับเมนู + และ Modal ---
+    let currentModalType = '';
+
+    // เปิด/ปิด เมนู +
+    $(document).on('click', '#st_phone_plus_btn', function() {
+        $('#st_phone_plus_menu').fadeToggle(100);
+    });
+
+    // ปิดเมนู + เมื่อคลิกที่อื่น
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('#st_phone_plus_btn, #st_phone_plus_menu').length) {
+            $('#st_phone_plus_menu').fadeOut(100);
+        }
+    });
+
+    // คลิกเลือกเมนูใน +
+    $(document).on('click', '.st-phone-plus-item', function() {
+        currentModalType = $(this).data('type');
+        $('#st_phone_plus_menu').fadeOut(100);
+
+        const modalTitle = $('#st_phone_modal_title');
+        const modalBody = $('#st_phone_modal_body');
+
+        if (currentModalType === 'slip') {
+            modalTitle.text('Create Transfer Slip');
+            modalBody.html(`
+                <input type="text" id="modal_slip_amount" class="st-phone-modal-input" placeholder="Amount (e.g. 1000 Credits)">
+                <input type="text" id="modal_slip_to" class="st-phone-modal-input" placeholder="Transfer To (Name)" style="margin-top:10px;">
+            `);
+        } else if (currentModalType === 'loc') {
+            modalTitle.text('Share Location');
+            modalBody.html(`
+                <input type="text" id="modal_loc_place" class="st-phone-modal-input" placeholder="Location Name / Address">
+            `);
+        } else if (currentModalType === 'voice') {
+            modalTitle.text('Record Voice Message');
+            modalBody.html(`
+                <input type="text" id="modal_voice_text" class="st-phone-modal-input" placeholder="Type what the character says...">
+            `);
+        }
+        $('#st_phone_modal').fadeIn(200);
+    });
+
+    // ปิด Modal
+    $(document).on('click', '#st_phone_modal_cancel', function() {
+        $('#st_phone_modal').fadeOut(200);
+    });
+
+    // ยืนยันข้อมูลใน Modal และเพิ่มลง Draft
+    $(document).on('click', '#st_phone_modal_confirm', function() {
+        if (currentModalType === 'slip') {
+            const amount = $('#modal_slip_amount').val().trim() || '0';
+            const to = $('#modal_slip_to').val().trim() || 'Unknown';
+            messageDrafts.push({ type: 'slip', amount: amount, to: to });
+        } else if (currentModalType === 'loc') {
+            const place = $('#modal_loc_place').val().trim() || 'Unknown Location';
+            messageDrafts.push({ type: 'loc', place: place });
+        } else if (currentModalType === 'voice') {
+            const text = $('#modal_voice_text').val().trim() || '...';
+            messageDrafts.push({ type: 'voice', text: text });
+        }
+
+        updateChatDraftsUI();
+        $('#st_phone_modal').fadeOut(200);
+    });
 
 }
 
