@@ -333,7 +333,7 @@ function renderHomeScreen() {
 // --- Phase 3.1: Message App (ระบบแชทพื้นฐาน) ---
 let messageDrafts = []; // อาร์เรย์เก็บข้อความที่เตรียมจะส่ง
 
-// ฟังก์ชันสร้างหน้าจอแชท
+// ฟังก์ชันสร้างหน้าจอแชท (อัปเดตเพิ่ม Modal และ Menu)
 function renderMessageApp() {
     const charDetails = getCharDetails();
     const settings = extension_settings[extensionName];
@@ -341,64 +341,103 @@ function renderMessageApp() {
 
     const html = `
         <div class="st-phone-home-wrapper">
-            <!-- วอลเปเปอร์เหมือนหน้าจอหลัก -->
             <div class="st-phone-wallpaper" style="background-image: url('${wallpaperUrl}');"></div>
             <div class="st-phone-wallpaper-overlay"></div>
 
-            <!-- Header แชท -->
             <div class="st-phone-app-header">
                 <div class="st-phone-back-btn" title="Back"><i class="fa-solid fa-chevron-left"></i></div>
                 <div class="st-phone-app-title">${charDetails.name}</div>
             </div>
 
-            <!-- พื้นที่แสดงบับเบิลแชท -->
             <div class="st-phone-chat-area" id="st_phone_chat_history"></div>
 
-            <!-- แถบพิมพ์ข้อความ -->
             <div class="st-phone-input-area">
+                <!-- เมนู + -->
+                <div class="st-phone-plus-menu" id="st_phone_plus_menu">
+                    <div class="st-phone-plus-item" data-type="slip"><i class="fa-solid fa-money-bill-transfer"></i> Transfer Slip</div>
+                    <div class="st-phone-plus-item" data-type="loc"><i class="fa-solid fa-location-dot"></i> Location</div>
+                    <div class="st-phone-plus-item" data-type="voice"><i class="fa-solid fa-microphone"></i> Voice Message</div>
+                </div>
+
                 <div class="st-phone-input-row">
                     <div class="st-phone-icon-btn" id="st_phone_plus_btn" title="Add Element"><i class="fa-solid fa-plus"></i></div>
                     <div class="st-phone-icon-btn" id="st_phone_sticker_btn" title="Sticker"><i class="fa-regular fa-face-smile"></i></div>
                     <div class="st-phone-icon-btn" id="st_phone_image_btn" title="Image"><i class="fa-regular fa-image"></i></div>
-
                     <input type="text" class="st-phone-text-input" id="st_phone_msg_input" placeholder="Type a message...">
-
                     <div class="st-phone-send-btn" id="st_phone_add_draft" title="Add to Draft"><i class="fa-solid fa-paper-plane"></i></div>
                 </div>
                 <div class="st-phone-export-btn" id="st_phone_export_prompt">Send to Chat Input</div>
             </div>
+
+            <!-- หน้าต่าง Modal สำหรับกรอกข้อมูล -->
+            <div class="st-phone-modal-overlay" id="st_phone_modal">
+                <div class="st-phone-modal-content">
+                    <div class="st-phone-modal-title" id="st_phone_modal_title">Title</div>
+                    <div id="st_phone_modal_body"></div>
+                    <div class="st-phone-modal-btns">
+                        <button class="st-phone-btn st-phone-btn-cancel" id="st_phone_modal_cancel">Cancel</button>
+                        <button class="st-phone-btn st-phone-btn-confirm" id="st_phone_modal_confirm">Confirm</button>
+                    </div>
+                </div>
+            </div>
         </div>
     `;
     $('#st_phone_screen').html(html);
-    updateChatDraftsUI(); // อัปเดตบับเบิลแชททันที
+    updateChatDraftsUI();
 }
 
-// ฟังก์ชันอัปเดตบับเบิลแชทบนหน้าจอ
+// ฟังก์ชันอัปเดตบับเบิลแชท (อัปเดตรองรับ Slip, Loc, Voice)
 function updateChatDraftsUI() {
     const chatArea = $('#st_phone_chat_history');
     chatArea.empty();
 
     if (messageDrafts.length === 0) {
-        chatArea.append(`<div style="color: rgba(255,255,255,0.6); text-align: center; margin-top: 20px; font-family: sans-serif; font-size: 13px;">No drafted messages.<br>Type below to start.</div>`);
+        chatArea.append(`<div style="color: rgba(255,255,255,0.6); text-align: center; margin-top: 20px; font-family: sans-serif; font-size: 13px;">No drafted messages.</div>`);
         return;
     }
 
     messageDrafts.forEach((draft, index) => {
         let contentHtml = '';
+
         if (draft.type === 'text') {
-            contentHtml = draft.text; // ตอนนี้มีแค่ text เดี๋ยว Phase หน้าจะมี sticker, slip
+            contentHtml = `<div class="st-phone-bubble">${draft.text}</div>`;
+        }
+        else if (draft.type === 'slip') {
+            contentHtml = `
+                <div class="st-phone-bubble-slip">
+                    <div style="font-size: 24px; margin-bottom: 5px;"><i class="fa-solid fa-circle-check"></i></div>
+                    <div style="font-weight: bold;">Transfer Successful</div>
+                    <div style="font-size: 13px; opacity: 0.9;">Amount: ${draft.amount}</div>
+                    <div style="font-size: 13px; opacity: 0.9;">To: ${draft.to}</div>
+                </div>`;
+        }
+        else if (draft.type === 'loc') {
+            contentHtml = `
+                <div class="st-phone-bubble-loc">
+                    <div style="font-size: 24px; margin-bottom: 5px;"><i class="fa-solid fa-map-location-dot"></i></div>
+                    <div style="font-weight: bold;">Location Shared</div>
+                    <div style="font-size: 13px; opacity: 0.9;">${draft.place}</div>
+                </div>`;
+        }
+        else if (draft.type === 'voice') {
+            contentHtml = `
+                <div class="st-phone-bubble-voice">
+                    <div class="st-phone-voice-play" onclick="$(this).next('.st-phone-voice-text').slideToggle();">
+                        <i class="fa-solid fa-circle-play"></i> Voice Message
+                    </div>
+                    <div class="st-phone-voice-text">"${draft.text}"</div>
+                </div>`;
         }
 
         const bubbleHtml = `
             <div class="st-phone-bubble-wrapper">
-                <div class="st-phone-bubble">${contentHtml}</div>
+                ${contentHtml}
                 <div class="st-phone-bubble-delete" data-index="${index}"><i class="fa-solid fa-trash"></i> Delete</div>
             </div>
         `;
         chatArea.append(bubbleHtml);
     });
 
-    // เลื่อนหน้าจอลงล่างสุดเสมอเมื่อมีข้อความใหม่
     chatArea.scrollTop(chatArea[0].scrollHeight);
 }
 
